@@ -140,7 +140,7 @@ private struct HoverHeader: View {
                 Image(systemName: "arrow.up.right")
                     .font(.system(size: 12, weight: .bold))
             }
-            .buttonStyle(CircleButtonStyle(size: 32, fill: Theme.dark2, foreground: .white, hoverFill: .white, hoverForeground: Theme.ink))
+            .buttonStyle(PanelButtonStyle(size: 32, fill: Theme.dark2, foreground: .white, hoverFill: .white, hoverForeground: Theme.ink))
             .help("Открыть дашборд  ⌥D")
             .accessibilityLabel("Открыть дашборд")
         }
@@ -190,19 +190,19 @@ private struct PlayerCard: View {
                 Button { controller.music(.previous) } label: {
                     Image(systemName: "backward.end.fill").font(.system(size: 12))
                 }
-                .buttonStyle(CircleButtonStyle(size: 30, fill: .clear, foreground: .white, hoverFill: Theme.dark3))
+                .buttonStyle(PanelButtonStyle(size: 30, fill: .clear, foreground: .white, hoverFill: Theme.dark3))
                 .accessibilityLabel("Назад")
 
                 Button { controller.music(.playPause) } label: {
                     Image(systemName: track.isPlaying ? "pause.fill" : "play.fill").font(.system(size: 14))
                 }
-                .buttonStyle(CircleButtonStyle(size: 36, fill: .white, foreground: Theme.ink))
+                .buttonStyle(PanelButtonStyle(size: 36, fill: .white, foreground: Theme.ink))
                 .accessibilityLabel(track.isPlaying ? "Пауза" : "Играть")
 
                 Button { controller.music(.next) } label: {
                     Image(systemName: "forward.end.fill").font(.system(size: 12))
                 }
-                .buttonStyle(CircleButtonStyle(size: 30, fill: .clear, foreground: .white, hoverFill: Theme.dark3))
+                .buttonStyle(PanelButtonStyle(size: 30, fill: .clear, foreground: .white, hoverFill: Theme.dark3))
                 .accessibilityLabel("Вперёд")
             }
         }
@@ -346,7 +346,7 @@ private struct AllDoneCard: View {
 }
 
 /// Круглая кнопка панели: под курсором может светлеть, при нажатии чуть сжимается.
-struct CircleButtonStyle: ButtonStyle {
+private struct PanelButtonStyle: ButtonStyle {
     var size: CGFloat
     var fill: Color
     var foreground: Color
@@ -354,13 +354,13 @@ struct CircleButtonStyle: ButtonStyle {
     var hoverForeground: Color?
 
     func makeBody(configuration: Configuration) -> some View {
-        CircleButton(configuration: configuration, style: self)
+        PanelButton(configuration: configuration, style: self)
     }
 }
 
-private struct CircleButton: View {
+private struct PanelButton: View {
     let configuration: ButtonStyleConfiguration
-    let style: CircleButtonStyle
+    let style: PanelButtonStyle
     @State private var isHovered = false
 
     var body: some View {
