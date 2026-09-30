@@ -1,6 +1,6 @@
 // Рендерит листы из design/<версия>/index.html в PNG (1440 pt @2x).
 // Запуск: NODE_PATH=$(npm root -g) node design/render.cjs [v2|v3] [папка]   (нужен playwright)
-// Без версии рендерится v2.
+// Без версии рендерится актуальная v3.
 const { chromium } = require("playwright");
 const path = require("path");
 
@@ -12,11 +12,13 @@ const versions = {
   },
   v3: {
     "#dashboard": "Дашборд главная v3.png",
+    "#sheet-focus": "Фокус-таймер.png",
+    "#sheet-work": "Работа.png",
   },
 };
 
 const args = process.argv.slice(2);
-const version = versions[args[0]] ? args.shift() : "v2";
+const version = versions[args[0]] ? args.shift() : "v3";
 const sheets = versions[version];
 const src = path.join(__dirname, version, "index.html");
 const out = args[0] || path.join(__dirname, version);

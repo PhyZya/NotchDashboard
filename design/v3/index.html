@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* Тёмная тема по мотивам тёмного оформления macOS: чёрный, серые, белый.
-   Цвет — только в статусах, таймере и обложке трека. Один акцент — системный. */
+   Цвет — только в статусах, таймере, обложке трека и на «+ Запись». */
 :root{
   --bg:#0B0B0D;                                   /* фон дашборда, сливается с вырезом */
   --surface:#1C1C1E;                              /* блоки */
@@ -20,7 +20,7 @@
   --seg-on:#636366;                               /* выбранный сегмент */
   --label:#F5F5F7; --label-2:rgba(235,235,245,.62); --label-3:rgba(235,235,245,.38);
   --sep:rgba(255,255,255,.08);
-  --accent:#0A84FF;                               /* системный акцент (NSColor.controlAccentColor) */
+  --accent:#0A84FF;                               /* акцент: «+ Запись» */
   --orange:#FF9F0A; --green:#30D158; --red:#FF453A; --yellow:#FFD60A;
   --cover:#FF453A;                                /* цвет обложки текущего трека */
   --font:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
@@ -342,6 +342,80 @@ kbd{font-family:var(--font);font-weight:600}
 .cc-th.photo{background:linear-gradient(160deg,#FFD6A0 0%,#FF9F7A 45%,#8E6CFF 100%);padding:0}
 .cc-th.photo .sun{position:absolute;left:16px;top:14px;width:20px;height:20px;border-radius:50%;background:#FFF4CF}
 .cc-th.photo .hill{position:absolute;left:-12px;right:-12px;bottom:-14px;height:42px;border-radius:50% 50% 0 0;background:#5B3FC9}
+
+/* ───────── Sheets ───────── */
+.sheet{width:1440px;margin:0 auto;background:#111113;padding:56px 56px 64px;color:var(--label)}
+.sheet h1{font-size:40px;line-height:46px;font-weight:800;letter-spacing:-.03em}
+.sheet .lead{font-size:15.5px;line-height:23px;color:var(--label-2);max-width:880px;margin-top:10px}
+.sheet h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:44px 0 18px}
+.cards{display:grid;gap:24px}
+.cards.c4{grid-template-columns:repeat(4,1fr)}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.cards.c2{grid-template-columns:repeat(2,1fr)}
+.cards > *{min-width:0}
+.card-cap{margin-top:14px}
+.card-cap b{display:block;font-size:15.5px;font-weight:700}
+.card-cap p{font-size:13.5px;line-height:20px;color:var(--label-2);margin-top:6px}
+.card-cap p code{font-family:var(--mono);font-size:12px;background:var(--fill-2);padding:1px 4px;border-radius:4px}
+.stage{border-radius:16px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--sep);display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:22px;overflow:hidden}
+.stage.light{background:var(--surface)}
+.stage.row{min-height:112px}
+.stage.tall{min-height:150px}
+.stage.fx{padding:14px}
+.stage.pad{padding:24px;min-height:322px}
+.stage.col-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.stage .focus{width:348px;height:290px;zoom:.83}
+table.how{width:100%;border-collapse:collapse;margin-top:4px}
+table.how td{border-top:1px solid var(--sep);padding:13px 0;font-size:14px;line-height:21px;vertical-align:top;color:var(--label-2)}
+table.how tr:last-child td{border-bottom:1px solid var(--sep)}
+table.how td:first-child{width:250px;font-weight:700;color:var(--label);padding-right:24px}
+table.how code{font-family:var(--mono);font-size:12.5px;background:var(--fill-2);padding:1px 5px;border-radius:5px}
+
+/* Состояния таймера */
+.f-main.alt{background:var(--label);color:#111}
+.f-main.ok{background:rgba(48,209,88,.2);color:var(--green)}
+.f-stop.txt{font-size:12.5px;font-weight:700;color:var(--label)}
+
+/* Рабочий стол и вырез */
+.desk{position:relative;height:132px;border-radius:14px;background:#1F2B33;overflow:hidden}
+.desk::before{content:"";position:absolute;inset:0 0 auto 0;height:32px;background:#161F25}
+.ears{position:absolute;left:50%;top:0;height:32px;transform:translateX(-50%);background:#000;border-radius:0 0 13px 13px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;width:278px;color:#fff}
+.ears.wide{width:430px}
+.ear-l,.ear-r{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700}
+.ear-l .i.s{color:#fff}
+.mini-cover{width:20px;height:20px;border-radius:5px;background:#26262B;position:relative;overflow:hidden}
+.mini-cover::after{content:"";position:absolute;right:-5px;bottom:-5px;width:15px;height:15px;border-radius:50%;background:var(--cover)}
+.mini-ring{width:20px;height:20px}
+.mini-ring circle{fill:none;stroke-width:3}
+.ear-time{font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:700;color:var(--orange)}
+.ok-dot{width:18px;height:18px;border-radius:50%;background:var(--green);display:grid;place-items:center;color:#fff}
+
+/* Компоненты листа «Работа» */
+.proj.wide{width:100%;max-width:250px}
+.panel{width:100%;background:var(--raised);border-radius:18px;box-shadow:0 0 0 1px var(--sep),0 12px 32px rgba(0,0,0,.45);padding:12px 18px 14px}
+.panel.tight{padding:6px;border-radius:14px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;height:34px;margin-bottom:4px}
+.panel-h b{font-size:15px;font-weight:700}
+.panel-h > span{font-size:12.5px;color:var(--label-3);font-weight:600}
+.step{display:flex;align-items:center;gap:10px;height:42px;border-top:1px solid var(--sep);font-size:13px;color:var(--label-2);white-space:nowrap}
+.step b{font-weight:600;color:var(--label)}
+.step .dim{color:var(--label-3)}
+.step .v{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--label-3)}
+.st{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;flex:none}
+.st.ok{background:rgba(48,209,88,.16);color:var(--green)}
+.st.wait{border:2.5px solid rgba(255,255,255,.12);border-top-color:var(--label);border-right-color:var(--label);animation:spin .9s linear infinite}
+.st.todo{border:2px dashed rgba(235,235,245,.22)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.grip{color:var(--label-3);font-weight:800;letter-spacing:-3px;width:14px;flex:none;font-size:13px}
+.fav.big{width:24px;height:24px;border-radius:7px}
+.fav.big .i{width:13px;height:13px;stroke-width:2.2}
+.panel-f{display:flex;align-items:center;gap:12px;border-top:1px solid var(--sep);padding-top:12px;font-size:12px;color:var(--label-3)}
+.pill.add{background:transparent;box-shadow:inset 0 0 0 1.5px rgba(235,235,245,.18);color:var(--label-3);padding:0 7px}
+.pill.add .i{color:var(--label-3)}
+.port.hover{box-shadow:0 0 0 1.5px var(--label)}
+.ib.danger{background:rgba(255,69,58,.18);color:var(--red);border-radius:50%}
+.tip{background:var(--raised-2);color:var(--label);font-size:12px;line-height:17px;padding:8px 12px;border-radius:10px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.tip span{color:var(--label-2)}
 </style>
 </head>
 <body>
@@ -673,6 +747,187 @@ kbd{font-family:var(--font);font-weight:600}
   </main>
 </section>
 
+<!-- ═════════════════════════ Лист: Фокус-таймер ═════════════════════════ -->
+<section class="sheet" id="sheet-focus">
+  <h1>Фокус-таймер</h1>
+  <p class="lead">Блок в правой колонке главной, всегда привязан к задаче. Кольцо показывает оставшееся время, жидкость внутри убывает вместе с ним. Когда дашборд свёрнут, таймер идёт дальше в правом «ухе» выреза.</p>
+
+  <h2>Состояния блока</h2>
+  <div class="cards c4">
+    <div>
+      <div class="stage fx"><div data-focus-card data-state="idle" data-left="1500"></div></div>
+      <div class="card-cap"><b>Выбор времени</b><p>Пресеты 15, 25, 45 и 60 минут или своё время: колесо мыши над кольцом, шаг 1 мин. Жидкость налита до краёв и медленно колышется.</p></div>
+    </div>
+    <div>
+      <div class="stage fx"><div data-focus-card data-state="running" data-left="1104"></div></div>
+      <div class="card-cap"><b>Идёт</b><p>Уровень опускается каждую секунду, волна и пузырьки в движении. Задача на главной подсвечена, в ней тикает то же время.</p></div>
+    </div>
+    <div>
+      <div class="stage fx"><div data-focus-card data-state="paused" data-left="1104"></div></div>
+      <div class="card-cap"><b>Пауза</b><p>Волна замирает, цвет гаснет, цифры медленно мигают. Через 10 минут на паузе «ухо» напомнит о таймере.</p></div>
+    </div>
+    <div>
+      <div class="stage fx"><div data-focus-card data-state="done" data-left="0"></div></div>
+      <div class="card-cap"><b>Готово</b><p>Кольцо вспыхивает, звучит сигнал. Одной кнопкой задача отмечается сделанной или добавляется 5 минут. Дальше перерыв 5 мин, после 4-го помидора 15.</p></div>
+    </div>
+  </div>
+
+  <h2>В вырезе · натуральный размер</h2>
+  <div class="cards c3">
+    <div>
+      <div class="desk"><div class="ears">
+        <span class="ear-l"><svg class="i s"><use href="#i-check"/></svg>4</span>
+        <span class="ear-r"><svg class="mini-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5" stroke="#3A3A3C"/><circle cx="10" cy="10" r="7.5" stroke="#FF9F0A" stroke-linecap="round" stroke-dasharray="47.12" stroke-dashoffset="12.44" transform="rotate(-90 10 10)"/></svg><span class="ear-time">18:24</span></span>
+      </div></div>
+      <div class="card-cap"><b>Таймер идёт</b><p>Справа кольцо и минуты, слева счётчик задач на сегодня. Клик по «уху» раскрывает дашборд сразу на таймере.</p></div>
+    </div>
+    <div>
+      <div class="desk"><div class="ears">
+        <span class="ear-l"><span class="mini-cover"></span></span>
+        <span class="ear-r"><svg class="mini-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5" stroke="#3A3A3C"/><circle cx="10" cy="10" r="7.5" stroke="#FF9F0A" stroke-linecap="round" stroke-dasharray="47.12" stroke-dashoffset="12.44" transform="rotate(-90 10 10)"/></svg><span class="ear-time">18:24</span></span>
+      </div></div>
+      <div class="card-cap"><b>Таймер и музыка</b><p>Обложка остаётся слева, а справа вместо эквалайзера таймер: у него приоритет, пока идёт фокус.</p></div>
+    </div>
+    <div>
+      <div class="desk"><div class="ears wide">
+        <span class="ear-l"><span class="ok-dot"><svg class="i xs"><use href="#i-check"/></svg></span>Готово · 25 мин</span>
+        <span class="ear-r" style="font-weight:600">Отчёт за квартал</span>
+      </div></div>
+      <div class="card-cap"><b>Время вышло</b><p>«Уши» на 2 секунды расширяются и показывают задачу, затем сжимаются обратно. Та же пружина, что у смены трека.</p></div>
+    </div>
+  </div>
+
+  <h2>Параметры движения</h2>
+  <table class="how">
+    <tr><td>Уровень жидкости</td><td>оставшееся время ÷ всё время; сдвиг раз в секунду за 800 мс, cubic-bezier(0.32, 0.72, 0, 1), та же кривая, что у раскрытия</td></tr>
+    <tr><td>Волна</td><td>две синусоиды с периодом 58 pt: передняя 2,4 с, задняя 3,6 с навстречу и прозрачнее; амплитуда 3,5 и 4,5 pt. До старта 5 и 7 с — «дышит»</td></tr>
+    <tr><td>Пузырьки</td><td>4 штуки, всплывают на 46 pt за 3 с со сдвигом по времени; только пока таймер идёт</td></tr>
+    <tr><td>Кольцо</td><td>толщина 6 pt, градиент #FFD60A → #FF9F0A → #FF453A, на конце светящаяся точка; убывает по часовой стрелке к 12 часам</td></tr>
+    <tr><td>Свечение</td><td>радиальное #FF7A3D за кольцом, размытие 16, «дышит» 3,2 с: масштаб 1 → 1,12</td></tr>
+    <tr><td>Пауза</td><td>насыщенность 100 → 35 % за 400 мс, волны и пузырьки останавливаются, цифры мигают раз в 1,6 с</td></tr>
+    <tr><td>Готово</td><td>жидкость уходит вниз, круг заливается зелёным #30D158, кольцо расходится вспышкой 1,6 с</td></tr>
+    <tr><td>В SwiftUI</td><td>TimelineView(.animation) + Canvas: волна считается как sin, уровень — через withAnimation. Позже вместо жидкости — 3D-модель (.usdz в RealityView) в том же круге 120 pt</td></tr>
+  </table>
+
+  <h2>Как это работает</h2>
+  <table class="how">
+    <tr><td>Привязка к задаче</td><td>Задача выбирается кнопкой ⇄ в карточке или перетаскиванием задачи из левой колонки на таймер. Без задачи — «Свободный фокус». Потраченное время записывается в задачу, а если у задачи есть тег проекта — ещё и в проект из блока «Работа»</td></tr>
+    <tr><td>Помидоры</td><td>25 мин работы → 5 мин перерыв, после 4-го — 15 мин. Точки в шапке блока — прогресс за день. Режим отключается в настройках, тогда таймер просто считает выбранное время</td></tr>
+    <tr><td>Горячие клавиши</td><td><code>⌥F</code> — старт и пауза из любого приложения, <code>Space</code> — то же внутри дашборда, когда блок в фокусе</td></tr>
+    <tr><td>Сворачивание</td><td>Таймер не останавливается: правое «ухо» показывает кольцо и минуты, клик по нему открывает дашборд</td></tr>
+    <tr><td>Окончание</td><td>Звук + «уши» расширяются на 2 с. На главной — «Задача выполнена?»: да отмечает задачу, +5 мин продлевает сессию</td></tr>
+    <tr><td>Мониторинг</td><td>Минуты фокуса за день попадают в плитку «в фокусе» блока задач и в недельный график</td></tr>
+  </table>
+</section>
+
+<!-- ═════════════════════════ Лист: Работа ═════════════════════════ -->
+<section class="sheet" id="sheet-work">
+  <h1>Работа</h1>
+  <p class="lead">Центральный блок главной. Слева список проектов с git-статусом, справа выбранный проект: запуск окружения одной кнопкой, git, ссылки и скрипты. Внизу — что сейчас поднято на localhost и закреплённые инструменты.</p>
+
+  <h2>Проект в списке · git-статус</h2>
+  <div class="cards c4">
+    <div>
+      <div class="stage light row"><button class="proj on wide"><span class="p-ic"><svg class="i"><use href="#i-user"/></svg></span><span class="p-tx"><b>SafinPortfolio</b><span class="p-meta"><svg class="i"><use href="#i-branch"/></svg>main <span class="g-ok">✓</span></span></span></button></div>
+      <div class="card-cap"><b>Всё чисто</b><p>Ветка и зелёная галочка: изменений нет, с origin всё совпадает.</p></div>
+    </div>
+    <div>
+      <div class="stage light row"><button class="proj on wide"><span class="p-ic"><svg class="i"><use href="#i-notch"/></svg></span><span class="p-tx"><b>NotchDashboard</b><span class="p-meta"><svg class="i"><use href="#i-branch"/></svg>main <span class="g-ch">●3</span> <span class="g-up">↑2</span></span></span></button></div>
+      <div class="card-cap"><b>Есть что закоммитить</b><p>Оранжевая точка — незакоммиченные файлы, ↑ — коммиты, которые ещё не запушены.</p></div>
+    </div>
+    <div>
+      <div class="stage light row"><button class="proj on wide"><span class="p-ic"><svg class="i"><use href="#i-chat"/></svg></span><span class="p-tx"><b>webAIchat</b><span class="p-meta"><svg class="i"><use href="#i-branch"/></svg>feature/stream <span class="g-dn">↓1</span></span></span></button></div>
+      <div class="card-cap"><b>Отстаёт от origin</b><p>↓ — на сервере есть новые коммиты. В карточке проекта появляется кнопка Pull.</p></div>
+    </div>
+    <div>
+      <div class="stage light row"><button class="proj on wide"><span class="p-ic"><svg class="i"><use href="#i-chat"/></svg><i class="live"></i></span><span class="p-tx"><b>webAIchat</b><span class="p-meta"><svg class="i"><use href="#i-globe"/></svg>:3000 · next dev</span></span></button></div>
+      <div class="card-cap"><b>Сервер запущен</b><p>Зелёная точка на иконке: у проекта слушает порт. При наведении вместо ветки — порт и процесс.</p></div>
+    </div>
+  </div>
+
+  <h2>Запуск окружения одной кнопкой</h2>
+  <div class="cards c2">
+    <div>
+      <div class="stage light pad">
+        <div class="panel">
+          <div class="panel-h"><b>Запускаю webAIchat</b><span>2 из 4</span></div>
+          <div class="step"><span class="st ok"><svg class="i xs"><use href="#i-check"/></svg></span><b>Cursor</b><span>открыта папка проекта</span><span class="v">~/Developer/webAIchat</span></div>
+          <div class="step"><span class="st ok"><svg class="i xs"><use href="#i-check"/></svg></span><b>Терминал</b><span>команда запущена</span><span class="v">npm run dev</span></div>
+          <div class="step"><span class="st wait"></span><b>Браузер</b><span>ждём, пока порт ответит</span><span class="v">localhost:3000</span></div>
+          <div class="step"><span class="st todo"></span><b>Figma</b><span class="dim">в очереди</span><span class="v">webAIchat · Макеты</span></div>
+          <div class="panel-f"><button class="btn">Отменить</button><span>Уже запущенное не трогаем: открытый Cursor просто выходит вперёд</span></div>
+        </div>
+      </div>
+      <div class="card-cap"><b>Нажали «Запустить»</b><p>Шаги выполняются по очереди, прогресс виден прямо в карточке проекта. Ссылка на localhost открывается только когда порт действительно ответил.</p></div>
+    </div>
+    <div>
+      <div class="stage light pad">
+        <div class="panel">
+          <div class="panel-h"><b>Окружение · webAIchat</b><button class="mini-btn" style="margin:0">Готово</button></div>
+          <div class="step"><span class="grip">⋮⋮</span><span class="fav big"><svg class="i"><use href="#i-pointer"/></svg></span><b>Открыть папку в приложении</b><span class="v">Cursor</span></div>
+          <div class="step"><span class="grip">⋮⋮</span><span class="fav big"><svg class="i"><use href="#i-prompt"/></svg></span><b>Команда в терминале</b><span class="v">npm run dev</span></div>
+          <div class="step"><span class="grip">⋮⋮</span><span class="fav big"><svg class="i"><use href="#i-globe"/></svg></span><b>Ссылка, когда порт ответит</b><span class="v">localhost:3000</span></div>
+          <div class="step"><span class="grip">⋮⋮</span><span class="fav big"><span class="figma"><i></i><i></i><i></i><i></i><i></i></span></span><b>Файл или ссылка</b><span class="v">figma.com/design/…</span></div>
+          <div class="panel-f"><span class="pill add" style="padding:0 10px"><svg class="i"><use href="#i-plus"/></svg>Шаг</span><span>Приложение · Папка · Команда · Ссылка · Файл</span></div>
+        </div>
+      </div>
+      <div class="card-cap"><b>Настройка набора</b><p>Открывается из «⋯» в карточке проекта. Шаги перетаскиваются, набор по умолчанию собирается сам: редактор из последнего открытия папки и <code>dev</code>-скрипт из package.json.</p></div>
+    </div>
+  </div>
+
+  <h2>Скрипты</h2>
+  <div class="cards c4">
+    <div>
+      <div class="stage light row fx"><div class="panel tight"><div class="script"><span class="s-st"><svg class="i"><use href="#i-rocket"/></svg></span><span class="s-name">deploy</span><span class="s-log">vercel --prod</span><button class="s-act"><svg class="i"><use href="#i-play"/></svg></button></div></div></div>
+      <div class="card-cap"><b>Не запущен</b><p>Иконка типа, имя и сама команда. ▶ запускает в фоне, без окна терминала.</p></div>
+    </div>
+    <div>
+      <div class="stage light row fx"><div class="panel tight"><div class="script run"><span class="s-st"><i></i></span><span class="s-name">dev</span><span class="s-log"><span class="ok">✓</span> Ready on :3000</span><span class="s-time">12 мин</span><button class="s-act"><svg class="i"><use href="#i-stop"/></svg></button></div></div></div>
+      <div class="card-cap"><b>Работает</b><p>Мигающая зелёная точка и последняя строка вывода. ■ останавливает процесс.</p></div>
+    </div>
+    <div>
+      <div class="stage light row fx"><div class="panel tight"><div class="script"><span class="s-st"><svg class="i"><use href="#i-box"/></svg></span><span class="s-name">build</span><span class="s-log"><span class="ok">✓</span> Compiled · 2 мин 14 с</span><button class="s-act"><svg class="i"><use href="#i-play"/></svg></button></div></div></div>
+      <div class="card-cap"><b>Успешно</b><p>Итог последнего запуска и длительность. Клик по строке — полный лог.</p></div>
+    </div>
+    <div>
+      <div class="stage light row fx"><div class="panel tight"><div class="script fail"><span class="s-st"><svg class="i"><use href="#i-x"/></svg></span><span class="s-name">test</span><span class="s-log"><span class="err">✕ 2 failed</span> · stream.test.ts</span><button class="s-act"><svg class="i"><use href="#i-refresh"/></svg></button></div></div></div>
+      <div class="card-cap"><b>Ошибка</b><p>Красный крестик и первая строка ошибки. ↻ перезапускает, на иконке проекта появляется красная точка.</p></div>
+    </div>
+  </div>
+
+  <h2>Localhost</h2>
+  <div class="cards c3">
+    <div>
+      <div class="stage light row tall"><span class="port"><i class="dot"></i><code>:3000</code>webAIchat<button class="ib"><svg class="i"><use href="#i-x"/></svg></button></span></div>
+      <div class="card-cap"><b>Узнали проект</b><p>Процесс запущен из папки проекта — показываем его имя. Клик по чипу открывает адрес в браузере.</p></div>
+    </div>
+    <div>
+      <div class="stage light row tall"><span class="port"><i class="dot unk"></i><code>:8080</code><span>python3</span><button class="ib"><svg class="i"><use href="#i-x"/></svg></button></span></div>
+      <div class="card-cap"><b>Чужой процесс</b><p>Серая точка и имя процесса. Системные порты (AirPlay, базы данных) скрыты, список исключений — в настройках.</p></div>
+    </div>
+    <div>
+      <div class="stage light row tall col-stage">
+        <span class="port hover"><i class="dot"></i><code>:3000</code>webAIchat<button class="ib danger"><svg class="i"><use href="#i-x"/></svg></button></span>
+        <span class="tip">Остановить <b>next dev</b> · PID 48213?<br><span>⌘-клик — без вопроса</span></span>
+      </div>
+      <div class="card-cap"><b>Остановить</b><p>× спрашивает подтверждение и отправляет процессу SIGINT, как Ctrl+C в терминале.</p></div>
+    </div>
+  </div>
+
+  <h2>Как это работает</h2>
+  <table class="how">
+    <tr><td>Проекты</td><td>Папка перетаскивается в блок или добавляется кнопкой «Проект». Иконка выбирается, порядок — по последней активности. Приложение работает без песочницы App Store — иначе не запустить git, скрипты и <code>lsof</code>; распространяется подписанным и нотаризованным .app</td></tr>
+    <tr><td>Запуск окружения</td><td>Набор шагов на проект: приложение с папкой, команда в терминале, ссылка (открывается, когда порт ответил), файл. Шаги идут по очереди, уже открытое не дублируется</td></tr>
+    <tr><td>Git</td><td><code>git status --porcelain</code> и <code>git rev-list --left-right --count</code> по событию FSEvents в папке <code>.git</code>, без постоянного опроса. <code>git fetch</code> — в фоне раз в 10 минут. Pull делается только fast-forward, при конфликте открывается терминал</td></tr>
+    <tr><td>Скрипты</td><td>Подтягиваются из package.json, Makefile и Package.swift, можно добавить свои. Запускаются в фоне через Process, в строке — последняя строка вывода, по клику — полный лог. ■ отправляет SIGINT</td></tr>
+    <tr><td>Localhost</td><td>Слушающие TCP-порты (<code>lsof -iTCP -sTCP:LISTEN</code>) раз в 5 секунд, пока дашборд открыт. Процесс сопоставляется с проектом по рабочей папке. Системные порты скрыты</td></tr>
+    <tr><td>Ссылки</td><td>GitHub подставляется из <code>git remote</code> автоматически, остальные — вручную. Клик открывает, ⌘-клик копирует адрес</td></tr>
+    <tr><td>Инструменты</td><td>Закреплённые приложения и адреса для всех проектов сразу. Иконки берутся из системы, перетаскивание из Dock или Finder добавляет новое</td></tr>
+    <tr><td>Разрешения</td><td>macOS один раз спросит про управление Терминалом и редактором (Автоматизация). Без разрешения шаг открывает приложение, но не запускает в нём команду</td></tr>
+    <tr><td>Позже</td><td>Статус CI и деплоя (GitHub Actions, Vercel), последние изменённые файлы проекта, учёт времени по проектам из фокус-таймера</td></tr>
+  </table>
+</section>
+
 <script>
 /* ── Кольцо таймера: жидкость, волна, пузырьки ── */
 const R = 70, C = 2 * Math.PI * R, LIQ_R = 60;
@@ -781,6 +1036,35 @@ if (!frozen) setInterval(() => {
   syncMain();
 }, 1000);
 syncMain();
+
+/* Карточки состояний таймера на листе */
+function focusCardHTML(state, left, total = 1500) {
+  const btn = { idle: ["i-play", "Начать", ""], running: ["i-pause", "Пауза", ""], paused: ["i-play", "Продолжить", "alt"], done: ["i-check", "Выполнена", "ok"] }[state];
+  const pomo = state === "done" ? '<i class="on"></i><i class="on"></i><i></i><i></i><span>2 из 4</span>' : '<i class="on"></i><i class="cur"></i><i></i><i></i><span>2 из 4</span>';
+  const foot = state === "done" ? "На задачу <b>1 ч 10 мин</b> · за день <b>2 ч 05 мин</b>" : "На задачу <b>45 мин</b> · за день <b>1 ч 40 мин</b>";
+  const stop = state === "done" ? '<button class="f-stop txt">+5</button>' : '<button class="f-stop"><svg class="i"><use href="#i-stop"/></svg></button>';
+  return `<section class="block focus">
+    <div class="head"><h2 class="title">Фокус</h2><div class="pomo">${pomo}</div><a class="go"><svg class="i"><use href="#i-arrow"/></svg></a></div>
+    <div class="f-body">
+      <div class="ring" data-static data-total="${total}" data-left="${left}" data-state="${state}"></div>
+      <div class="f-side">
+        <button class="f-task"><small>Задача <svg class="i xs"><use href="#i-swap"/></svg></small><b>Отправить отчёт за квартал</b><span>#работа · до 18:00</span></button>
+        <div class="presets seg"><button>15</button><button class="on">25</button><button>45</button><button>60</button></div>
+        <div class="f-btns"><button class="f-main ${btn[2]}"><svg class="i"><use href="#${btn[0]}"/></svg><span>${btn[1]}</span></button>${stop}</div>
+      </div>
+    </div>
+    <div class="f-foot"><svg class="i"><use href="#i-timer"/></svg><span>${foot}</span></div>
+  </section>`;
+}
+document.querySelectorAll("[data-focus-card]").forEach(el => {
+  el.outerHTML = focusCardHTML(el.dataset.state, +el.dataset.left);
+});
+
+/* Статичные кольца на листах спецификации */
+document.querySelectorAll(".ring[data-static]").forEach(el => {
+  buildRing(el);
+  renderRing(el, +el.dataset.total, +el.dataset.left, el.dataset.state);
+});
 </script>
 </body>
 </html>
