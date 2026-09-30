@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NotchDashboard v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Тёмная тема по мотивам тёмного оформления macOS: чёрный, серые, белый.
+   Цвет — только в статусах, таймере и обложке трека. Один акцент — системный. */
+:root{
+  --bg:#0B0B0D;                                   /* фон дашборда, сливается с вырезом */
+  --surface:#1C1C1E;                              /* блоки */
+  --raised:#2C2C2E;                               /* строки и карточки внутри блоков */
+  --raised-2:#3A3A3C;                             /* выделенная строка */
+  --fill:rgba(118,118,128,.24);                   /* кнопки, чипы, плитки иконок */
+  --fill-2:rgba(118,118,128,.16);                 /* тихие кнопки, дорожки */
+  --seg-on:#636366;                               /* выбранный сегмент */
+  --label:#F5F5F7; --label-2:rgba(235,235,245,.62); --label-3:rgba(235,235,245,.38);
+  --sep:rgba(255,255,255,.08);
+  --accent:#0A84FF;                               /* системный акцент (NSColor.controlAccentColor) */
+  --orange:#FF9F0A; --green:#30D158; --red:#FF453A; --yellow:#FFD60A;
+  --cover:#FF453A;                                /* цвет обложки текущего трека */
+  --font:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  --mono:"SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000}
+body{font-family:var(--font);color:var(--label);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+kbd{font-family:var(--font);font-weight:600}
+.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.i.s{width:14px;height:14px}
+.i.xs{width:12px;height:12px;stroke-width:2.4}
+.num{font-variant-numeric:tabular-nums}
+
+/* ───────── Liquid Glass ─────────
+   Только слой управления поверх контента: шапка, ассистент, кнопки плеера,
+   иконки мини-приложений. Сами блоки — плотные поверхности. */
+.glass{position:relative;isolation:isolate;
+  background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.045));
+  -webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.16),inset 0 -1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.45)}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(255,255,255,.1) 28%,rgba(255,255,255,0) 52%,rgba(255,255,255,.1) 80%,rgba(255,255,255,.32));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.glass.tint{background:linear-gradient(180deg,rgba(64,156,255,.95),rgba(10,120,245,.9))}
+.glass.clear{background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.02));box-shadow:inset 0 1px 1px rgba(255,255,255,.12),inset 0 -1px 2px rgba(0,0,0,.3)}
+
+/* ───────── Screen ───────── */
+.screen{position:relative;width:1440px;height:900px;background:var(--bg);overflow:hidden;margin:0 auto}
+/* еле заметный свет из выреза, чтобы стеклу было что преломлять */
+.screen::before{content:"";position:absolute;left:50%;top:-240px;width:1100px;height:520px;margin-left:-550px;border-radius:50%;background:radial-gradient(closest-side,rgba(120,120,140,.16),transparent);pointer-events:none}
+.menubar{position:absolute;inset:0 0 auto 0;height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.brand{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.brand-notch{width:15px;height:10px;background:var(--label);border-radius:2px 2px 5px 5px}
+.clock{font-size:15px;font-weight:500;color:var(--label-2);display:flex;gap:12px}
+.clock b{color:var(--label);font-weight:700}
+.notch{position:absolute;left:50%;top:0;width:190px;height:32px;margin-left:-95px;background:#000;border-radius:0 0 14px 14px;box-shadow:0 0 0 1px rgba(255,255,255,.04)}
+.hero{position:absolute;left:24px;right:24px;top:44px;display:flex;justify-content:space-between;align-items:flex-start}
+.hero h1{font-size:28px;line-height:34px;font-weight:700;letter-spacing:-.025em}
+.hero p{font-size:14px;color:var(--label-2);margin-top:4px}
+.actions{display:flex;gap:12px;margin-top:2px}
+.search{width:338px;height:44px;border-radius:22px;display:flex;align-items:center;gap:10px;padding:0 18px;font-size:14px;color:var(--label-2)}
+.search span{flex:1}
+.search kbd{font-size:13px;color:var(--label-3)}
+.rec{height:44px;border-radius:22px;display:flex;align-items:center;gap:8px;padding:0 20px;font-size:15px;font-weight:700;color:#fff}
+.rec kbd{font-weight:600;opacity:.8}
+.circle{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--label)}
+
+.grid{position:absolute;left:24px;top:112px;width:1392px;height:764px;display:grid;grid-template-columns:348px 664px 348px;gap:16px}
+.col{display:flex;flex-direction:column;gap:16px;min-height:0}
+.block{position:relative;border-radius:22px;padding:20px;display:flex;flex-direction:column;overflow:hidden;min-height:0;background:var(--surface);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.head{display:flex;align-items:center;justify-content:space-between;height:32px;flex:none;gap:10px}
+.title{font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.sub{font-size:13px;color:var(--label-3);font-weight:500}
+.go{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--fill-2);color:var(--label-2)}
+.go .i{width:14px;height:14px;stroke-width:2.4}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.btn{height:32px;padding:0 14px;border-radius:16px;background:var(--fill);display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--label);white-space:nowrap}
+.btn kbd{color:var(--label-3)}
+/* сегментированный контрол, как в macOS */
+.seg{display:flex;padding:2px;border-radius:9px;background:var(--fill-2);gap:0}
+.seg button{flex:1;height:24px;border-radius:7px;font-size:12px;font-weight:600;color:var(--label-2);padding:0 10px;white-space:nowrap}
+.seg button.on{background:var(--seg-on);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+
+/* Tasks */
+.tasks{flex:0 0 536px}
+.t-stats{display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px;height:50px}
+.t-count{display:flex;align-items:baseline;gap:8px}
+.t-count b{font-size:46px;line-height:46px;font-weight:700;letter-spacing:-.03em}
+.t-count span{font-size:16px;font-weight:600;color:var(--label-2)}
+.week{display:flex;gap:5px;align-items:flex-end;height:44px}
+.wk{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.wk i{display:block;width:8px;border-radius:3px;background:rgba(255,255,255,.24)}
+.wk.today i{background:var(--label)}
+.wk.future i{height:4px!important;background:rgba(255,255,255,.1)}
+.wk span{font-size:9.5px;font-weight:600;color:var(--label-3);line-height:10px}
+.wk.today span{color:var(--label)}
+.segs{display:flex;gap:4px;margin-top:12px}
+.segs i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.1)}
+.segs i.on{background:var(--label)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.tile{border-radius:12px;background:var(--raised);padding:7px 10px 8px}
+.tile b{display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.01em}
+.tile span{display:block;font-size:11px;line-height:14px;color:var(--label-3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-list{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:6px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 86%,transparent);mask-image:linear-gradient(#000 86%,transparent)}
+.t-group{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;height:18px;margin-top:4px;color:var(--label-2)}
+.t-group:first-child{margin-top:0}
+.task{display:flex;align-items:center;gap:12px;min-height:44px;padding:5px 12px;border-radius:14px;background:var(--raised);flex:none}
+.chk{width:20px;height:20px;border-radius:50%;border:1.8px solid rgba(235,235,245,.34);flex:none;display:grid;place-items:center}
+.task .tx{flex:1;min-width:0}
+.task b{display:block;font-size:14.5px;font-weight:600;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task small{display:block;font-size:12px;line-height:16px;color:var(--label-3);font-weight:500;white-space:nowrap}
+.prio{font-size:13px;font-weight:800;letter-spacing:-.04em;color:var(--orange);flex:none;padding:0 2px}
+.prio.low{color:var(--label-3)}
+.task.cur{background:var(--raised-2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.task.cur small{color:var(--label-2)}
+.cur-meta{display:flex!important;align-items:center;gap:4px}
+.infocus{display:inline-flex;align-items:center;gap:5px;color:var(--orange);font-weight:700}
+.infocus .pulse{width:6px;height:6px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 3px rgba(255,159,10,.22);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 5px rgba(255,159,10,.04)}}
+.task.done{background:rgba(255,255,255,.035)}
+.task.done .chk{background:rgba(235,235,245,.28);border-color:transparent;color:var(--surface)}
+.task.done b{text-decoration:line-through;text-decoration-thickness:1.5px;color:var(--label-3)}
+.task.done small{opacity:.7}
+.t-add{flex:none;height:40px;border-radius:20px;background:var(--fill);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
+.t-add kbd{color:var(--label-3)}
+
+/* Mini apps — иконки в стиле «прозрачные» macOS: стекло и белый символ */
+.apps{flex:1}
+.apps-grid{display:grid;grid-template-columns:repeat(4,1fr);row-gap:10px;margin-top:10px}
+.app{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--label-2)}
+.app-ic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:var(--label)}
+.app-ic .i{width:20px;height:20px}
+.app.add .app-ic{background:transparent;border:1.5px dashed rgba(235,235,245,.2);color:var(--label-3)}
+
+/* Music — цвет даёт только обложка, поверх неё стекло */
+.music{flex:0 0 120px;flex-direction:row;align-items:center;gap:18px;padding:20px 22px 20px 20px;isolation:isolate;background:#161618}
+.music .amb{position:absolute;inset:0;z-index:-1;
+  background:
+    radial-gradient(240px 170px at 70px 60px,color-mix(in srgb,var(--cover) 62%,transparent),transparent 72%),
+    radial-gradient(420px 160px at 300px 150px,color-mix(in srgb,var(--cover) 20%,transparent),transparent 70%),
+    radial-gradient(260px 140px at 640px -20px,rgba(255,255,255,.07),transparent 70%);
+  filter:blur(10px)}
+.music::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:1;
+  background:linear-gradient(160deg,rgba(255,255,255,.34),rgba(255,255,255,.06) 30%,rgba(255,255,255,0) 60%,rgba(255,255,255,.14));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.cover{position:relative;width:80px;height:80px;border-radius:16px;background:#101012;overflow:hidden;flex:none;box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06)}
+.cover .cv-line{position:absolute;left:12px;top:14px;width:22px;height:5px;border-radius:3px;background:#E6E6EA}
+.cover .cv-dot{position:absolute;right:-12px;bottom:-12px;width:62px;height:62px;border-radius:50%;background:var(--cover)}
+.m-info{flex:1;min-width:0}
+.m-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--label-2)}
+.eq{display:flex;align-items:flex-end;gap:2px;height:11px}
+.eq i{width:3px;border-radius:1px;background:var(--label);animation:eq 1s ease-in-out infinite;transform-origin:bottom}
+.eq i:nth-child(1){height:5px;animation-delay:-.2s}.eq i:nth-child(2){height:10px;animation-delay:-.5s}.eq i:nth-child(3){height:7px;animation-delay:-.8s}.eq i:nth-child(4){height:9px;animation-delay:-.35s}
+@keyframes eq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.m-title{font-size:19px;font-weight:700;letter-spacing:-.015em;margin-top:5px;line-height:22px}
+.m-artist{font-size:14px;font-weight:500;color:var(--label-2);line-height:18px}
+.m-progress{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;font-weight:600;color:var(--label-2)}
+.bar{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.16);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--label);border-radius:2px}
+.m-ctrl{display:flex;align-items:center;gap:10px;flex:none}
+.c-sm{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--label)}
+.c-sm .i{width:15px;height:15px}
+.c-lg{width:46px;height:46px;border-radius:50%;background:var(--label);color:#111;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+
+/* Work */
+.work{flex:1}
+.w-head-l{display:flex;align-items:baseline;gap:10px}
+.w-head-r{display:flex;align-items:center;gap:8px}
+.w-body{display:grid;grid-template-columns:180px 1fr;gap:12px;margin-top:14px;flex:none}
+.projects{display:flex;flex-direction:column;gap:4px}
+.proj{display:flex;align-items:center;gap:10px;height:54px;padding:0 10px;border-radius:14px;text-align:left;position:relative}
+.proj.on{background:var(--raised)}
+.p-ic{position:relative;width:32px;height:32px;border-radius:10px;background:var(--fill);color:var(--label);display:grid;place-items:center;flex:none}
+.p-ic .i{width:17px;height:17px}
+.p-tx{min-width:0;flex:1}
+.p-tx b{display:block;font-size:13.5px;font-weight:600;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-meta{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;color:var(--label-3);line-height:16px;white-space:nowrap}
+.p-meta .i{width:11px;height:11px;stroke-width:2.4}
+.g-ch{color:var(--orange);font-weight:700}
+.g-up,.g-dn{color:var(--label-2);font-weight:700}
+.g-ok{color:var(--green);font-weight:700}
+.live{position:absolute;right:-3px;top:-3px;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--surface)}
+.proj.on .live{border-color:var(--raised)}
+.drop{margin-top:6px;height:44px;border-radius:14px;border:1.5px dashed rgba(235,235,245,.16);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--label-3)}
+
+.detail{background:var(--raised);border-radius:18px;padding:16px;display:flex;flex-direction:column;min-width:0}
+.d-head{display:flex;align-items:center;gap:12px}
+.d-head .p-ic{width:42px;height:42px;border-radius:13px}
+.d-head .p-ic .i{width:21px;height:21px}
+.d-name{flex:1;min-width:0}
+.d-name b{display:block;font-size:17px;font-weight:700;letter-spacing:-.015em;line-height:21px}
+.d-path{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11.5px;color:var(--label-3);margin-top:2px}
+.ib{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;color:var(--label-3)}
+.ib .i{width:13px;height:13px}
+.launch{height:34px;padding:0 14px 0 12px;border-radius:17px;background:var(--label);color:#111;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;flex:none}
+.launch .i{width:13px;height:13px}
+.d-row{display:flex;align-items:center;gap:6px;margin-top:9px;min-width:0}
+.d-row:first-of-type{margin-top:14px}
+.d-lbl{font-size:11.5px;font-weight:600;color:var(--label-3);width:46px;flex:none}
+.pill{height:24px;padding:0 9px;border-radius:12px;background:var(--fill-2);display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;white-space:nowrap;color:var(--label)}
+.pill .i{width:12px;height:12px;stroke-width:2.3;color:var(--label-2)}
+.pill.mono{font-family:var(--mono);font-size:11.5px;font-weight:500}
+.pill.ok,.pill.ok .i{color:var(--green)}
+.mini-btn{height:24px;padding:0 10px;border-radius:12px;background:var(--fill);color:var(--label);font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;margin-left:auto}
+.mini-btn .i{width:11px;height:11px;stroke-width:2.6}
+.fav{width:14px;height:14px;border-radius:4px;display:grid;place-items:center;font-size:8.5px;font-weight:800;color:var(--label);background:rgba(255,255,255,.14);flex:none}
+.fav .i{width:9px;height:9px;stroke-width:3;color:var(--label)}
+.figma{display:grid;grid-template-columns:5px 5px;gap:0;width:10px;height:14px;flex:none}
+.figma i{width:5px;height:4.66px;display:block;background:var(--label)}
+.figma i:nth-child(1){border-radius:3px 0 0 0;opacity:.95}.figma i:nth-child(2){border-radius:0 3px 3px 0;opacity:.7}.figma i:nth-child(3){opacity:.8}.figma i:nth-child(4){border-radius:50%;opacity:.6}.figma i:nth-child(5){border-radius:0 0 0 3px;opacity:.85}
+.d-commit{display:flex;align-items:center;gap:6px;margin:6px 0 0 52px;font-size:11.5px;color:var(--label-3);white-space:nowrap;min-width:0}
+.d-commit code{font-family:var(--mono);font-size:11px;color:var(--label-2);background:var(--fill-2);padding:1px 5px;border-radius:5px}
+.d-commit .msg{color:var(--label-2);font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.scripts{margin-top:12px;display:flex;flex-direction:column;gap:2px}
+.scripts .d-lbl{margin-bottom:4px}
+.script{display:flex;align-items:center;gap:10px;height:32px;padding:0 6px 0 8px;border-radius:10px}
+.script.run{background:rgba(255,255,255,.05)}
+.s-st{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--fill-2);color:var(--label-2)}
+.s-st .i{width:10px;height:10px}
+.script.run .s-st{background:rgba(48,209,88,.16)}
+.script.run .s-st i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(48,209,88,.8);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.35}}
+.s-name{font-family:var(--mono);font-size:12.5px;font-weight:600;width:52px;flex:none}
+.s-log{flex:1;min-width:0;font-family:var(--mono);font-size:11.5px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-log .ok{color:var(--green)}
+.s-log .err{color:var(--red);font-weight:600}
+.script.fail .s-st{background:rgba(255,69,58,.16);color:var(--red)}
+.script.fail .s-st .i{stroke-width:3}
+.s-time{font-size:11.5px;font-weight:500;color:var(--label-3);flex:none}
+.s-act{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--fill-2);flex:none;color:var(--label-2)}
+.s-act .i{width:10px;height:10px}
+.script.run .s-act{color:var(--label)}
+
+.w-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.w-row{display:flex;align-items:center;gap:8px;min-width:0}
+.w-lbl{font-size:12px;font-weight:600;color:var(--label-3);width:84px;flex:none}
+.port{height:32px;border-radius:16px;background:var(--raised);display:flex;align-items:center;gap:7px;padding:0 6px 0 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.port code{font-family:var(--mono);font-size:12px;font-weight:600}
+.port span{color:var(--label-3);font-weight:500}
+.port .dot{width:7px;height:7px;background:var(--green)}
+.port .dot.unk{background:rgba(235,235,245,.3)}
+.port .ib{width:22px;height:22px;border-radius:50%}
+.tool{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--label);flex:none}
+.tool .i{width:18px;height:18px}
+.tool.add{background:transparent;border:1.5px dashed rgba(235,235,245,.16);color:var(--label-3)}
+.tool-sep{width:1px;height:22px;background:var(--sep);margin:0 4px}
+
+/* Assistant — плавающая стеклянная капсула */
+.assistant{flex:0 0 60px;margin-top:4px;align-self:center;width:572px;border-radius:30px;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 8px}
+.as-ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--label);background:rgba(255,255,255,.1);box-shadow:inset 0 1px 1px rgba(255,255,255,.18)}
+.as-ic .i{width:20px;height:20px}
+.as-in{flex:1;display:flex;align-items:center;gap:10px;font-size:14.5px;color:var(--label-3);white-space:nowrap;min-width:0}
+.as-in span{flex:1;overflow:hidden;text-overflow:ellipsis}
+.as-in kbd{color:var(--label-2);font-size:13px;height:28px;padding:0 10px;border-radius:14px;background:rgba(255,255,255,.08);display:grid;place-items:center}
+
+/* Focus — единственный тёплый акцент на экране */
+.focus{flex:0 0 290px}
+.pomo{display:flex;align-items:center;gap:4px;margin-left:auto;margin-right:2px;font-size:12px;font-weight:600;color:var(--label-3)}
+.pomo i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.14)}
+.pomo i.on{background:var(--orange)}
+.pomo i.cur{background:var(--orange);box-shadow:0 0 0 2.5px rgba(255,159,10,.28)}
+.pomo span{margin-left:5px}
+.f-body{display:flex;gap:16px;margin-top:12px;align-items:center}
+.f-body .ring{width:144px;height:144px}
+.f-side{flex:1;min-width:0;display:flex;flex-direction:column}
+.f-task{padding:10px 12px;border-radius:14px;background:var(--raised);display:block;text-align:left;width:100%}
+.f-task small{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;color:var(--label-3)}
+.f-task b{display:block;font-size:13px;font-weight:600;line-height:16px;margin-top:3px}
+.f-task span{display:block;font-size:11.5px;color:var(--label-3);margin-top:3px}
+.presets{margin-top:10px}
+.presets button{height:24px;font-size:12.5px;font-weight:700;padding:0}
+.f-btns{display:flex;gap:6px;margin-top:8px}
+.f-main{flex:1;min-width:0;height:36px;padding:0 8px;border-radius:18px;background:var(--fill);color:var(--label);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.f-main .i{width:13px;height:13px}
+.f-stop{width:36px;height:36px;flex:none;border-radius:50%;background:var(--fill-2);display:grid;place-items:center;color:var(--label-2)}
+.f-stop .i{width:11px;height:11px}
+.f-foot{margin-top:auto;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:var(--label-3)}
+.f-foot b{color:var(--label-2);font-weight:600}
+.f-foot .i{width:13px;height:13px}
+
+/* Timer ring */
+.ring{position:relative;width:152px;height:152px;flex:none;--glow:.5}
+.ring::before{content:"";position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle,#FF7A3D 0%,rgba(255,90,78,0) 70%);filter:blur(16px);opacity:var(--glow);animation:glow 3.2s ease-in-out infinite}
+@keyframes glow{50%{transform:scale(1.12);opacity:calc(var(--glow) * .7)}}
+.ring svg{position:relative;width:100%;height:100%;display:block;overflow:visible}
+.ring .track{fill:none;stroke:#2C2C2E;stroke-width:6}
+.ring .prog{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .6s linear}
+.ring .level{transition:transform .8s cubic-bezier(.32,.72,0,1)}
+.ring .wave{animation:wave 2.4s linear infinite}
+.ring .wave.back{animation-duration:3.6s;animation-direction:reverse}
+@keyframes wave{to{transform:translateX(58px)}}
+.ring .bub{animation:bub 3s ease-in infinite;opacity:0}
+@keyframes bub{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-46px);opacity:0}}
+.ring .head{filter:drop-shadow(0 0 6px rgba(255,212,59,.9));transition:cx .6s linear, cy .6s linear}
+.ring-t{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-shadow:0 1px 10px rgba(120,30,10,.35)}
+.ring-t b{font-size:32px;line-height:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ring-t small{font-size:11px;font-weight:600;opacity:.85;margin-top:1px}
+.ring.is-paused .wave,.ring.is-paused .bub,.ring.is-paused::before{animation-play-state:paused}
+.ring.is-paused .liquid{filter:saturate(.35) brightness(.8)}
+.ring.is-paused .ring-t b{animation:blink 1.6s ease-in-out infinite}
+.ring.is-idle .bub{display:none}
+.ring.is-idle .wave{animation-duration:5s}
+.ring.is-idle .wave.back{animation-duration:7s}
+.ring.is-done::before{animation:burst 1.6s ease-out infinite;--glow:.9}
+@keyframes burst{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+.ring.is-done .ring-t{text-shadow:none}
+.ring .done-ic{opacity:0}
+.ring.is-done .done-ic{opacity:1}
+
+/* Notes & bookmarks */
+.notes{flex:0 0 222px}
+.note-card{margin-top:10px;background:var(--raised);border-radius:14px;padding:10px 14px}
+.note-card b{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:700;line-height:18px}
+.note-card b .i{width:14px;height:14px;color:var(--yellow);stroke-width:2.2}
+.note-card span{display:block;font-size:12.5px;line-height:17px;margin-top:2px;color:var(--label-2)}
+.note-card small{display:block;font-size:11px;color:var(--label-3);margin-top:3px;font-weight:500}
+.bm{display:flex;align-items:center;gap:10px;margin-top:8px}
+.bm + .bm{margin-top:6px}
+.bm-ic{width:30px;height:30px;border-radius:9px;background:var(--fill);color:var(--label);display:grid;place-items:center;font-size:13px;font-weight:800;flex:none}
+.bm b{display:block;font-size:13.5px;font-weight:600;line-height:17px}
+.bm small{display:block;font-size:11.5px;line-height:14px;color:var(--label-3);font-weight:500}
+
+/* Clipboard */
+.clip{flex:1}
+.rec-ind{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;margin-left:auto;color:var(--label-3)}
+.rec-ind i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(48,209,88,.18)}
+.chips{margin-top:10px}
+.clip-row{display:flex;gap:8px;margin-top:12px;-webkit-mask-image:linear-gradient(90deg,#000 86%,transparent);mask-image:linear-gradient(90deg,#000 86%,transparent)}
+.cc{width:92px;flex:none;display:flex;flex-direction:column;gap:6px}
+.cc-th{height:80px;border-radius:12px;position:relative;overflow:hidden;padding:8px;background:var(--raised)}
+.cc-cap{font-size:11px;line-height:14px;font-weight:600;color:var(--label-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-th.shot{background:#0E0E10;box-shadow:inset 0 0 0 1px var(--sep);font-family:var(--mono);font-size:7.5px;line-height:11px;color:var(--label-2)}
+.cc-th.shot .e{color:var(--red)}
+.cc-th.text p{font-size:11px;font-weight:600;line-height:14px}
+.cc-th.text .pin{position:absolute;right:7px;bottom:7px;width:12px;height:12px;color:var(--label-3)}
+.cc-th.code code{font-family:var(--mono);font-size:10px;line-height:14px;font-weight:500;color:var(--label-2)}
+.cc-th.photo{background:linear-gradient(160deg,#FFD6A0 0%,#FF9F7A 45%,#8E6CFF 100%);padding:0}
+.cc-th.photo .sun{position:absolute;left:16px;top:14px;width:20px;height:20px;border-radius:50%;background:#FFF4CF}
+.cc-th.photo .hill{position:absolute;left:-12px;right:-12px;bottom:-14px;height:42px;border-radius:50% 50% 0 0;background:#5B3FC9}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8a1 1 0 0 0-1.5.86z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4.2" height="15" rx="1.2" fill="currentColor" stroke="none"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5.5" y="5.5" width="13" height="13" rx="2.5" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 5.5v13" stroke-width="2.6"/><path d="M19 6.2v11.6a.8.8 0 0 1-1.25.66L9.6 12.66a.8.8 0 0 1 0-1.32l8.15-5.8A.8.8 0 0 1 19 6.2z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 5.5v13" stroke-width="2.6"/><path d="M5 6.2v11.6a.8.8 0 0 0 1.25.66l8.15-5.8a.8.8 0 0 0 0-1.32L6.25 5.54A.8.8 0 0 0 5 6.2z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M8.5 7.5h7M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="4"/><path d="m11 12.5 8-8M16 7.5l2.5 2.5M13.5 10l2 2"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6 6.2 6 10.5a6 6 0 0 1-12 0c0-4.3 6-10.5 6-10.5z"/></symbol>
+    <symbol id="i-sticky" viewBox="0 0 24 24"><path d="M5 4h14v10l-6 6H5z"/><path d="M13 20v-6h6"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V6.5A2.5 2.5 0 0 1 6.5 4H8M16 4h1.5A2.5 2.5 0 0 1 20 6.5V8M20 16v1.5a2.5 2.5 0 0 1-2.5 2.5H16M8 20H6.5A2.5 2.5 0 0 1 4 17.5V16"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4.5 19.5l1.3-4.2A7.5 7.5 0 1 1 20 11.5z"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7.5a2 2 0 0 1 2-2h3.8l2 2h7.2a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-folder-plus" viewBox="0 0 24 24"><path d="M3.5 7.5a2 2 0 0 1 2-2h3.8l2 2h7.2a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M12 10.5v5M9.5 13h5"/></symbol>
+    <symbol id="i-term" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="m7.5 9.5 3 2.5-3 2.5M12.5 15h4"/></symbol>
+    <symbol id="i-prompt" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5M12.5 17.5h7"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8.5 7.5-4.5 4.5 4.5 4.5M15.5 7.5l4.5 4.5-4.5 4.5"/></symbol>
+    <symbol id="i-branch" viewBox="0 0 24 24"><circle cx="6.5" cy="5.5" r="2"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="7.5" r="2"/><path d="M6.5 7.5v9M17.5 9.5c0 4-5.5 3.5-10 7"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6.5 13.5 12 19l5.5-5.5"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></symbol>
+    <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.5l2.2 1.6M9.5 3h5"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21a6 6 0 0 0 6-6c0-3.5-2.5-5.5-3.5-8-.8 1.8-2 2.8-3.2 3.2C11.5 8 11 5.5 9.5 3.5 8.5 7 6 9.5 6 14.5A6 6 0 0 0 12 21z"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="m4 16 5-5 3.5 3.5L20 7M14.5 7H20v5.5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 4h6M10 4v5.5L7 13h10l-3-3.5V4M12 13v7"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m20.5 16-5-5-8.5 8"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4.5 19.5h4l10-10-4-4-10 10z"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></symbol>
+    <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5.5 14.5C4 16 3.5 20.5 3.5 20.5S8 20 9.5 18.5M9 15l-2-2c1.5-4.5 5-8.5 13-9-.5 8-4.5 11.5-9 13z"/><circle cx="14.5" cy="9.5" r="1.5"/></symbol>
+    <symbol id="i-hammer" viewBox="0 0 24 24"><path d="m13.5 9.5-8.3 8.3a1.8 1.8 0 0 0 2.5 2.5l8.3-8.3"/><path d="m11.5 7.5 5 5 4-4-3.5-3.5c-1.5-1.5-4-2-6-1z"/></symbol>
+    <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M5.5 4 19 10.5l-6 1.8-2.3 6.2z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M20.5 3.5 3.5 10.5l7 2.5 2.5 7z"/><path d="m10.5 13 4-4"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></symbol>
+    <symbol id="i-notch" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M9 5v1a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V5"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M6 12h.01M12 12h.01M18 12h.01" stroke-width="3"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4.5h5.5V10M19.5 4.5 11 13M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v12c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6M5 12c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4M12 17h.01"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3L19.5 9M19.5 4v5h-5"/></symbol>
+  </defs>
+</svg>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5c.6 4.4 2.6 6.9 7.5 8.5-4.9 1.6-6.9 4.1-7.5 8.5-.6-4.4-2.6-6.9-7.5-8.5 4.9-1.6 6.9-4.1 7.5-8.5z"/></symbol>
+  </defs>
+</svg>
+
+<!-- ═════════════════════════ Главная ═════════════════════════ -->
+<section class="screen" id="dashboard" aria-label="Дашборд, главная">
+  <div class="menubar">
+    <div class="brand"><span class="brand-notch"></span>NotchDashboard</div>
+    <div class="clock"><span>Ср, 30 сентября</span><b>14:32</b></div>
+  </div>
+  <div class="notch"></div>
+
+  <div class="hero">
+    <div>
+      <h1>Добрый день</h1>
+      <p>Среда, 30 сентября</p>
+    </div>
+    <div class="actions">
+      <label class="search glass"><svg class="i"><use href="#i-search"/></svg><span>Искать по всему дашборду</span><kbd>⌘F</kbd></label>
+      <button class="rec glass tint"><svg class="i"><use href="#i-plus"/></svg>Запись <kbd>⌘K</kbd></button>
+      <button class="circle glass" aria-label="Настройки"><svg class="i"><use href="#i-sliders"/></svg></button>
+      <button class="circle glass" aria-label="Свернуть"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+  </div>
+
+  <main class="grid">
+    <!-- ── Левая колонка ── -->
+    <div class="col">
+      <section class="block tasks">
+        <div class="head"><h2 class="title">Задачи на сегодня</h2><a class="go"><svg class="i"><use href="#i-arrow"/></svg></a></div>
+        <div class="t-stats">
+          <div class="t-count"><b>3</b><span>из 8 сделано</span></div>
+          <div class="week" title="Сделано за неделю">
+            <div class="wk"><i style="height:22px"></i><span>П</span></div>
+            <div class="wk"><i style="height:30px"></i><span>В</span></div>
+            <div class="wk today"><i style="height:13px"></i><span>С</span></div>
+            <div class="wk future"><i></i><span>Ч</span></div>
+            <div class="wk future"><i></i><span>П</span></div>
+            <div class="wk future"><i></i><span>С</span></div>
+            <div class="wk future"><i></i><span>В</span></div>
+          </div>
+        </div>
+        <div class="segs"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="tiles">
+          <div class="tile"><b><i class="dot" style="background:var(--red)"></i>1</b><span>просрочена</span></div>
+          <div class="tile"><b>1:40</b><span>в фокусе</span></div>
+          <div class="tile"><b>5 дней</b><span>подряд</span></div>
+        </div>
+        <div class="t-list">
+          <div class="t-group"><i class="dot" style="background:var(--red)"></i>Просрочено</div>
+          <div class="task"><span class="chk"></span><div class="tx"><b>Оплатить интернет</b><small>вчера, 18:00 · ↻ ежемесячно</small></div><span class="prio">!!</span></div>
+          <div class="t-group">Сегодня</div>
+          <div class="task cur"><span class="chk"></span><div class="tx"><b>Отправить отчёт за квартал</b><small class="cur-meta"><span class="infocus"><i class="pulse"></i>в фокусе <span class="num" data-bind="focus-left">18:24</span></span> · 18:00 · #работа</small></div></div>
+          <div class="task"><span class="chk"></span><div class="tx"><b>Забрать посылку</b><small>до 20:00 · #дом</small></div><span class="prio low">!</span></div>
+          <div class="task"><span class="chk"></span><div class="tx"><b>Тренировка</b><small>19:30 · ↻ пн, ср, пт</small></div></div>
+          <div class="task done"><span class="chk"><svg class="i xs"><use href="#i-check"/></svg></span><div class="tx"><b>Созвон с командой</b><small>11:00 · ↻ по будням</small></div></div>
+        </div>
+        <button class="t-add"><svg class="i"><use href="#i-plus"/></svg>Добавить задачу <kbd>⌘K</kbd></button>
+      </section>
+
+      <section class="block apps">
+        <div class="head"><h2 class="title">Мини-приложения</h2><a class="go"><svg class="i"><use href="#i-arrow"/></svg></a></div>
+        <div class="apps-grid">
+          <button class="app"><span class="app-ic glass clear"><svg class="i"><use href="#i-calc"/></svg></span>Калькулятор</button>
+          <button class="app"><span class="app-ic glass clear"><svg class="i"><use href="#i-cal"/></svg></span>Календарь</button>
+          <button class="app"><span class="app-ic glass clear"><svg class="i"><use href="#i-key"/></svg></span>Пароли</button>
+          <button class="app"><span class="app-ic glass clear"><svg class="i"><use href="#i-swap"/></svg></span>Конвертер</button>
+          <button class="app"><span class="app-ic glass clear"><svg class="i"><use href="#i-drop"/></svg></span>Пипетка</button>
+          <button class="app"><span class="app-ic glass clear"><svg class="i"><use href="#i-sticky"/></svg></span>Стикеры</button>
+          <button class="app"><span class="app-ic glass clear"><svg class="i"><use href="#i-scan"/></svg></span>Снимок</button>
+          <button class="app add"><span class="app-ic"><svg class="i"><use href="#i-plus"/></svg></span>Добавить</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Центр ── -->
+    <div class="col">
+      <section class="block music">
+        <i class="amb" aria-hidden="true"></i>
+        <div class="cover"><i class="cv-line"></i><i class="cv-dot"></i></div>
+        <div class="m-info">
+          <div class="m-label"><span class="eq"><i></i><i></i><i></i><i></i></span>Сейчас играет · Spotify</div>
+          <div class="m-title">Тёплый шум</div>
+          <div class="m-artist">Кассета</div>
+          <div class="m-progress num"><span>1:24</span><div class="bar"><i style="width:36%"></i></div><span>3:52</span></div>
+        </div>
+        <div class="m-ctrl">
+          <button class="c-sm glass" aria-label="Назад"><svg class="i"><use href="#i-prev"/></svg></button>
+          <button class="c-lg" aria-label="Пауза"><svg class="i"><use href="#i-pause"/></svg></button>
+          <button class="c-sm glass" aria-label="Вперёд"><svg class="i"><use href="#i-next"/></svg></button>
+        </div>
+      </section>
+
+      <section class="block work">
+        <div class="head">
+          <div class="w-head-l"><h2 class="title">Работа</h2><span class="sub">4 проекта · 3 сервера на localhost</span></div>
+          <div class="w-head-r">
+            <button class="btn"><svg class="i s"><use href="#i-folder-plus"/></svg>Проект</button>
+            <a class="go"><svg class="i"><use href="#i-arrow"/></svg></a>
+          </div>
+        </div>
+
+        <div class="w-body">
+          <div class="projects">
+            <button class="proj on">
+              <span class="p-ic"><svg class="i"><use href="#i-chat"/></svg><i class="live" title="Сервер запущен"></i></span>
+              <span class="p-tx"><b>webAIchat</b><span class="p-meta"><svg class="i"><use href="#i-branch"/></svg>feature/stream <span class="g-dn">↓1</span></span></span>
+            </button>
+            <button class="proj">
+              <span class="p-ic"><svg class="i"><use href="#i-notch"/></svg></span>
+              <span class="p-tx"><b>NotchDashboard</b><span class="p-meta"><svg class="i"><use href="#i-branch"/></svg>main <span class="g-ch">●3</span> <span class="g-up">↑2</span></span></span>
+            </button>
+            <button class="proj">
+              <span class="p-ic"><svg class="i"><use href="#i-user"/></svg><i class="live" title="Сервер запущен"></i></span>
+              <span class="p-tx"><b>SafinPortfolio</b><span class="p-meta"><svg class="i"><use href="#i-branch"/></svg>main <span class="g-ok">✓</span></span></span>
+            </button>
+            <button class="proj">
+              <span class="p-ic"><svg class="i"><use href="#i-code"/></svg></span>
+              <span class="p-tx"><b>FFCustomCodes</b><span class="p-meta"><svg class="i"><use href="#i-branch"/></svg>dev <span class="g-ch">●12</span></span></span>
+            </button>
+            <div class="drop"><svg class="i s"><use href="#i-folder-plus"/></svg>Перетащите папку</div>
+          </div>
+
+          <div class="detail">
+            <div class="d-head">
+              <span class="p-ic"><svg class="i"><use href="#i-chat"/></svg></span>
+              <div class="d-name">
+                <b>webAIchat</b>
+                <div class="d-path">~/Developer/webAIchat
+                  <button class="ib" title="Открыть в Finder"><svg class="i"><use href="#i-folder"/></svg></button><button class="ib" title="Открыть в Терминале"><svg class="i"><use href="#i-term"/></svg></button><button class="ib" title="Скопировать путь"><svg class="i"><use href="#i-copy"/></svg></button>
+                </div>
+              </div>
+              <button class="launch"><svg class="i"><use href="#i-play"/></svg>Запустить</button>
+            </div>
+
+            <div class="d-row">
+              <span class="d-lbl">Запуск</span>
+              <span class="pill"><span class="fav"><svg class="i"><use href="#i-pointer"/></svg></span>Cursor</span>
+              <span class="pill mono"><svg class="i"><use href="#i-prompt"/></svg>npm run dev</span>
+              <span class="pill"><svg class="i"><use href="#i-globe"/></svg>:3000</span>
+              <span class="pill"><span class="figma"><i></i><i></i><i></i><i></i><i></i></span>Figma</span>
+            </div>
+
+            <div class="d-row">
+              <span class="d-lbl">Git</span>
+              <span class="pill mono"><svg class="i"><use href="#i-branch"/></svg>feature/stream</span>
+              <span class="pill ok"><svg class="i"><use href="#i-check"/></svg>чисто</span>
+              <span class="pill" title="Отстаёт от origin на 1 коммит"><svg class="i"><use href="#i-down"/></svg>1</span>
+              <button class="mini-btn"><svg class="i"><use href="#i-down"/></svg>Pull</button>
+            </div>
+            <div class="d-commit"><code>a3f9c2e</code><span class="msg">Стриминг ответов через SSE</span><span>· 2 ч назад</span></div>
+
+            <div class="d-row">
+              <span class="d-lbl">Ссылки</span>
+              <span class="pill"><span class="fav"><svg class="i"><use href="#i-branch"/></svg></span>GitHub</span>
+              <span class="pill"><span class="fav"><svg class="i"><use href="#i-globe"/></svg></span>Прод</span>
+              <span class="pill"><span class="fav"><svg class="i"><use href="#i-globe"/></svg></span>Стейдж</span>
+              <span class="pill"><span class="fav">N</span>Доки</span>
+            </div>
+
+            <div class="scripts">
+              <span class="d-lbl">Скрипты</span>
+              <div class="script run">
+                <span class="s-st"><i></i></span>
+                <span class="s-name">dev</span>
+                <span class="s-log"><span class="ok">✓</span> Ready on http://localhost:3000</span>
+                <span class="s-time">12 мин</span>
+                <button class="s-act" title="Остановить"><svg class="i"><use href="#i-stop"/></svg></button>
+              </div>
+              <div class="script">
+                <span class="s-st"><svg class="i"><use href="#i-box"/></svg></span>
+                <span class="s-name">build</span>
+                <span class="s-log"><span class="ok">✓</span> Compiled · 2 мин 14 с</span>
+                <span class="s-time">вчера</span>
+                <button class="s-act" title="Запустить"><svg class="i"><use href="#i-play"/></svg></button>
+              </div>
+              <div class="script fail">
+                <span class="s-st"><svg class="i"><use href="#i-x"/></svg></span>
+                <span class="s-name">test</span>
+                <span class="s-log"><span class="err">✕ 2 failed</span> · stream.test.ts</span>
+                <span class="s-time">1 ч</span>
+                <button class="s-act" title="Перезапустить"><svg class="i"><use href="#i-refresh"/></svg></button>
+              </div>
+              <div class="script">
+                <span class="s-st"><svg class="i"><use href="#i-rocket"/></svg></span>
+                <span class="s-name">deploy</span>
+                <span class="s-log">vercel --prod</span>
+                <span class="s-time">3 дня</span>
+                <button class="s-act" title="Запустить"><svg class="i"><use href="#i-play"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-foot">
+          <div class="w-row">
+            <span class="w-lbl">Localhost</span>
+            <span class="port" title="Клик — открыть в браузере"><i class="dot"></i><code>:3000</code>webAIchat<button class="ib" title="Остановить"><svg class="i"><use href="#i-x"/></svg></button></span>
+            <span class="port" title="Клик — открыть в браузере"><i class="dot"></i><code>:5173</code>SafinPortfolio<button class="ib" title="Остановить"><svg class="i"><use href="#i-x"/></svg></button></span>
+            <span class="port" title="Клик — открыть в браузере"><i class="dot unk"></i><code>:8080</code><span>python3</span><button class="ib" title="Остановить"><svg class="i"><use href="#i-x"/></svg></button></span>
+          </div>
+          <div class="w-row">
+            <span class="w-lbl">Инструменты</span>
+            <span class="tool glass clear" title="Cursor"><svg class="i"><use href="#i-pointer"/></svg></span>
+            <span class="tool glass clear" title="Xcode"><svg class="i"><use href="#i-hammer"/></svg></span>
+            <span class="tool glass clear" title="Терминал"><svg class="i"><use href="#i-prompt"/></svg></span>
+            <span class="tool glass clear" title="Figma"><span class="figma" style="transform:scale(1.25)"><i></i><i></i><i></i><i></i><i></i></span></span>
+            <span class="tool glass clear" title="Docker"><svg class="i"><use href="#i-box"/></svg></span>
+            <span class="tool glass clear" title="Postman"><svg class="i"><use href="#i-send"/></svg></span>
+            <span class="tool glass clear" title="Supabase"><svg class="i"><use href="#i-db"/></svg></span>
+            <span class="tool-sep"></span>
+            <span class="tool glass clear" title="localhost:3000"><svg class="i"><use href="#i-globe"/></svg></span>
+            <span class="tool add" title="Закрепить приложение или ссылку"><svg class="i"><use href="#i-plus"/></svg></span>
+          </div>
+        </div>
+      </section>
+
+      <div class="assistant glass">
+        <span class="as-ic"><svg class="i"><use href="#i-sparkle"/></svg></span>
+        <div class="as-in"><span>Спросить ассистента — о чём угодно или о ваших записях</span><kbd>⌘J</kbd></div>
+      </div>
+    </div>
+
+    <!-- ── Правая колонка ── -->
+    <div class="col">
+      <section class="block focus" id="focus-main">
+        <div class="head">
+          <h2 class="title">Фокус</h2>
+          <div class="pomo" title="Помидоры сегодня"><i class="on"></i><i class="cur"></i><i></i><i></i><span>2 из 4</span></div>
+          <a class="go"><svg class="i"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="f-body">
+          <div class="ring" data-total="1500" data-left="1104" data-state="running"></div>
+          <div class="f-side">
+            <button class="f-task"><small>Задача <svg class="i xs"><use href="#i-swap"/></svg></small><b>Отправить отчёт за квартал</b><span>#работа · до 18:00</span></button>
+            <div class="presets seg">
+              <button data-min="15">15</button><button data-min="25" class="on">25</button><button data-min="45">45</button><button data-min="60">60</button>
+            </div>
+            <div class="f-btns">
+              <button class="f-main"><svg class="i"><use href="#i-pause"/></svg><span>Пауза</span></button>
+              <button class="f-stop" aria-label="Сбросить"><svg class="i"><use href="#i-stop"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="f-foot"><svg class="i"><use href="#i-timer"/></svg><span>На задачу <b>45 мин</b> · за день <b>1 ч 40 мин</b></span></div>
+      </section>
+
+      <section class="block notes">
+        <div class="head"><h2 class="title">Заметки и закладки</h2><a class="go"><svg class="i"><use href="#i-arrow"/></svg></a></div>
+        <div class="note-card">
+          <b><svg class="i"><use href="#i-sticky"/></svg>Идеи для дашборда</b>
+          <span>• Сводка дня в 9:00 &nbsp;• Виджет на iPhone</span>
+          <small>Markdown · изменено 2 ч назад</small>
+        </div>
+        <div class="bm"><span class="bm-ic">A</span><div><b>CloudKit: синхронизация</b><small>developer.apple.com</small></div></div>
+        <div class="bm"><span class="bm-ic">G</span><div><b>PhyZya/NotchDashboard</b><small>github.com</small></div></div>
+      </section>
+
+      <section class="block clip">
+        <div class="head"><h2 class="title">Буфер обмена</h2><span class="rec-ind"><i></i>запись идёт</span><a class="go"><svg class="i"><use href="#i-arrow"/></svg></a></div>
+        <div class="chips seg"><button class="on">Все</button><button>Текст</button><button>Фото</button><button>Код</button><button>Ссылки</button></div>
+        <div class="clip-row">
+          <div class="cc"><div class="cc-th shot"><div class="term">$ swift build<br>Compiling…<br><span class="e">error: Build<br>failed</span></div></div><span class="cc-cap">Снимок · 14:02</span></div>
+          <div class="cc"><div class="cc-th text"><p>Адрес: ул. Садовая, 12, кв.&nbsp;5</p><svg class="i pin"><use href="#i-pin"/></svg></div><span class="cc-cap">Закреплено</span></div>
+          <div class="cc"><div class="cc-th code"><code>git push -u origin main</code></div><span class="cc-cap">Код · Терминал</span></div>
+          <div class="cc"><div class="cc-th photo"><i class="sun"></i><i class="hill"></i></div><span class="cc-cap">Фото · 1 ч</span></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</section>
+
+<script>
+/* ── Кольцо таймера: жидкость, волна, пузырьки ── */
+const R = 70, C = 2 * Math.PI * R, LIQ_R = 60;
+const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+let uid = 0;
+
+function wavePath(amp, phase) {
+  // синусоида из квадратичных кривых, период 58, с запасом по краям для сдвига
+  let d = `M ${-116 + phase} 0`;
+  for (let x = -116 + phase; x < 240; x += 58) {
+    d += ` Q ${x + 14.5} ${-amp} ${x + 29} 0 T ${x + 58} 0`;
+  }
+  return d + ` V 170 H ${-116 + phase} Z`;
+}
+
+function buildRing(el) {
+  const id = "r" + (++uid);
+  el.innerHTML = `
+  <svg viewBox="0 0 152 152" aria-hidden="true">
+    <defs>
+      <linearGradient id="${id}-prog" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FFD60A"/><stop offset=".5" stop-color="#FF9F0A"/><stop offset="1" stop-color="#FF453A"/>
+      </linearGradient>
+      <linearGradient id="${id}-liq" x1="0" y1="-6" x2="0" y2="124" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#FFC24B"/><stop offset=".45" stop-color="#FF7A3D"/><stop offset="1" stop-color="#E8386A"/>
+      </linearGradient>
+      <radialGradient id="${id}-glass" cx=".35" cy=".3" r=".8">
+        <stop offset="0" stop-color="#2A2A2E"/><stop offset="1" stop-color="#151517"/>
+      </radialGradient>
+      <linearGradient id="${id}-rim" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".8" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".2"/>
+      </linearGradient>
+      <clipPath id="${id}-clip"><circle cx="76" cy="76" r="${LIQ_R}"/></clipPath>
+    </defs>
+    <circle class="track" cx="76" cy="76" r="${R}"/>
+    <g clip-path="url(#${id}-clip)">
+      <circle cx="76" cy="76" r="${LIQ_R}" fill="url(#${id}-glass)"/>
+      <g class="level">
+        <g class="liquid">
+          <path class="wave back" d="${wavePath(4.5, 29)}" fill="url(#${id}-liq)" opacity=".45" transform="translate(0 -3)"/>
+          <path class="wave" d="${wavePath(3.5, 0)}" fill="url(#${id}-liq)"/>
+          <circle class="bub" cx="58" cy="54" r="2.2" fill="#FFE3A8" style="animation-delay:-.4s"/>
+          <circle class="bub" cx="84" cy="70" r="1.6" fill="#FFE3A8" style="animation-delay:-1.6s"/>
+          <circle class="bub" cx="100" cy="50" r="2.6" fill="#FFE3A8" style="animation-delay:-2.3s"/>
+          <circle class="bub" cx="70" cy="80" r="1.4" fill="#FFE3A8" style="animation-delay:-1s"/>
+        </g>
+      </g>
+      <ellipse cx="60" cy="38" rx="22" ry="9" fill="#fff" opacity=".1" transform="rotate(-24 60 38)"/>
+    </g>
+    <circle cx="76" cy="76" r="${LIQ_R - .5}" fill="none" stroke="url(#${id}-rim)" stroke-width="1"/>
+    <circle class="prog" cx="76" cy="76" r="${R}" stroke="url(#${id}-prog)" stroke-dasharray="${C}" transform="rotate(-90 76 76)"/>
+    <circle class="head" r="4.5" fill="#FFF6D6"/>
+    <g class="done-ic"><circle cx="76" cy="76" r="${LIQ_R}" fill="#30D158"/></g>
+  </svg>
+  <div class="ring-t"><b class="num">00:00</b><small></small></div>`;
+}
+
+function renderRing(el, total, left, state) {
+  const frac = total ? Math.max(0, Math.min(1, left / total)) : 0;
+  el.className = "ring is-" + state;
+  el.querySelector(".prog").style.strokeDashoffset = C * (1 - frac);
+  el.querySelector(".prog").style.opacity = frac > 0 ? 1 : 0;
+  const a = -Math.PI / 2 + 2 * Math.PI * frac;
+  const head = el.querySelector(".head");
+  head.setAttribute("cx", 76 + R * Math.cos(a));
+  head.setAttribute("cy", 76 + R * Math.sin(a));
+  head.style.opacity = frac > 0 && frac < 1 ? 1 : 0;
+  // уровень жидкости = оставшееся время
+  const y = state === "done" ? 140 : 136 - 124 * frac;
+  el.querySelector(".level").style.transform = `translateY(${y}px)`;
+  el.querySelector(".ring-t b").textContent = state === "done" ? "Готово" : fmt(left);
+  el.querySelector(".ring-t b").style.fontSize = state === "done" ? "24px" : "";
+  el.querySelector(".ring-t small").textContent =
+    state === "idle" ? "готов к старту" : state === "paused" ? "пауза" : state === "done" ? `${Math.round(total / 60)} мин в фокусе` : `из ${fmt(total)}`;
+}
+
+/* ── Живой таймер на главной ── */
+const main = document.getElementById("focus-main");
+const ring = main.querySelector(".ring");
+buildRing(ring);
+const T = { total: +ring.dataset.total, left: +ring.dataset.left, state: ring.dataset.state };
+const frozen = new URLSearchParams(location.search).has("shot");
+
+function syncMain() {
+  renderRing(ring, T.total, T.left, T.state);
+  const btn = main.querySelector(".f-main");
+  const labels = { idle: ["i-play", "Начать"], running: ["i-pause", "Пауза"], paused: ["i-play", "Продолжить"], done: ["i-check", "Задача выполнена"] };
+  btn.querySelector("use").setAttribute("href", "#" + labels[T.state][0]);
+  btn.querySelector("span").textContent = labels[T.state][1];
+  document.querySelectorAll('[data-bind="focus-left"]').forEach(n => n.textContent = T.state === "done" ? "готово" : fmt(T.left));
+  main.querySelectorAll(".presets button").forEach(b => b.classList.toggle("on", +b.dataset.min * 60 === T.total));
+}
+main.querySelectorAll(".presets button").forEach(b => b.addEventListener("click", () => {
+  T.total = T.left = +b.dataset.min * 60; T.state = "idle"; syncMain();
+}));
+main.querySelector(".f-main").addEventListener("click", () => {
+  T.state = { idle: "running", running: "paused", paused: "running", done: "idle" }[T.state];
+  if (T.state === "idle") T.left = T.total;
+  syncMain();
+});
+main.querySelector(".f-stop").addEventListener("click", () => { T.left = T.total; T.state = "idle"; syncMain(); });
+if (!frozen) setInterval(() => {
+  if (T.state !== "running") return;
+  T.left = Math.max(0, T.left - 1);
+  if (T.left === 0) T.state = "done";
+  syncMain();
+}, 1000);
+syncMain();
+</script>
+</body>
+</html>
