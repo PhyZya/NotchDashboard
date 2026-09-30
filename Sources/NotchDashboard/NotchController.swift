@@ -12,6 +12,7 @@ final class NotchController {
     private var machine = NotchStateMachine()
     private var notchPanel: OverlayPanel?
     private var dashboardPanel: OverlayPanel?
+    private var backdrop: NSWindow?
     private let pointer = PointerMonitor()
     private let hotkeys = HotkeyCenter()
     private var observers: [NSObjectProtocol] = []
@@ -33,12 +34,14 @@ final class NotchController {
         // пустое сочетание мешало бы набирать символы вроде ⌥K = «˚».
         hotkeys.register(.dashboard)
 
-        // В закреплённом наведении курсор не нужен: оно не сворачивается.
-        if options.state != .hover {
+        if options.tracksPointer {
             pointer.onMove = { [weak self] in self?.refreshPointer() }
             pointer.start()
         }
         applyLaunchState()
+        if options.runsDemo {
+            runDemo()
+        }
     }
 
     // MARK: - Действия из интерфейса
@@ -130,6 +133,17 @@ final class NotchController {
             send(.toggleDashboard)
             if let section = options.section {
                 send(.openSection(section))
+            }
+        }
+    }
+
+    private func runDemo() {
+        Task { [weak self] in
+            var elapsed = 0.0
+            for step in DemoStep.script {
+                try? await Task.sleep(for: .seconds(step.at - elapsed))
+                elapsed = step.at
+                self?.send(step.event)
             }
         }
     }
@@ -285,6 +299,9 @@ final class NotchController {
         }
         model.geometry = geometry
 
+        if options.showsBackdrop {
+            showBackdrop(on: geometry)
+        }
         let panel = notchPanel ?? makeNotchPanel()
         notchPanel = panel
         panel.setFrame(geometry.hangingFrame(size: NotchMetrics.panelSize(notch: geometry.notchSize)), display: true)
@@ -297,6 +314,19 @@ final class NotchController {
             dashboardPanel?.setFrame(geometry.screenFrame, display: true)
         }
         updateMouseTransparency()
+    }
+
+    /// Фон цвета «стола» под всеми окнами, как на листах дизайна (`--backdrop`).
+    private func showBackdrop(on geometry: ScreenGeometry) {
+        let window = backdrop ?? NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: false)
+        backdrop = window
+        let desk = DesignPalette.desk
+        window.backgroundColor = NSColor(srgbRed: desk.red, green: desk.green, blue: desk.blue, alpha: desk.alpha)
+        window.ignoresMouseEvents = true
+        window.isReleasedWhenClosed = false
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        window.setFrame(geometry.screenFrame, display: true)
+        window.orderFrontRegardless()
     }
 
     private func makeNotchPanel() -> OverlayPanel {

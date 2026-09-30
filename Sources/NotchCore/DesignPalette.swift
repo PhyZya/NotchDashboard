@@ -51,6 +51,8 @@ public enum DesignPalette {
     public static let ok = DesignColor(hex: 0x2FBF5B)
     public static let notch = DesignColor(hex: 0x000000)
 
+    /// Рабочий стол на листах спецификации — фон для `--backdrop`.
+    public static let desk = DesignColor(hex: 0x1F2B33)
     /// Дата в строке с часами (`.clock` в макете).
     public static let clock = DesignColor(hex: 0x3D3D42)
     /// Подсказка в поле ассистента и сочетание `⌘J` рядом с ней.

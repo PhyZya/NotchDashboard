@@ -24,6 +24,42 @@ struct LaunchOptionsTests {
         #expect(options.section == .work)
     }
 
+    @Test func debugFlagsAndPointerTracking() {
+        let plain = LaunchOptions(arguments: [])
+        #expect(!plain.showsBackdrop && !plain.runsDemo)
+        #expect(plain.tracksPointer)
+
+        let demo = LaunchOptions(arguments: ["--demo", "--backdrop"])
+        #expect(demo.runsDemo && demo.showsBackdrop)
+        #expect(!demo.tracksPointer)
+
+        #expect(!LaunchOptions(arguments: ["--state", "hover"]).tracksPointer)
+    }
+
+    /// Сценарий проходит все состояния каркаса и возвращается в покой.
+    @Test func demoScriptVisitsEveryState() {
+        let times = DemoStep.script.map(\.at)
+        #expect(times == times.sorted())
+
+        var machine = NotchStateMachine()
+        var effects: [NotchStateMachine.Effect] = []
+        for step in DemoStep.script {
+            effects += machine.send(step.event)
+            if step.event == .pointerEntered {
+                // В приложении это делает таймер наведения.
+                effects += machine.send(.hoverDelayElapsed)
+            }
+        }
+        #expect(effects.contains(.expandHover))
+        #expect(effects.contains(.openDashboard(from: .hover)))
+        #expect(effects.contains(.showRoute(.section(.tasks))))
+        #expect(effects.contains(.showRoute(.home)))
+        #expect(effects.last == .cancelHoverTimer)
+        #expect(effects.contains(.closeDashboard))
+        #expect(machine.phase == .idle)
+        #expect(machine.isHoverArmed)
+    }
+
     /// Xcode добавляет свои аргументы, например `-NSDocumentRevisionsDebugMode YES`.
     @Test func unknownValuesAreIgnored() {
         let options = LaunchOptions(arguments: ["-NSDocumentRevisionsDebugMode", "YES", "--state", "fullscreen", "--section"])

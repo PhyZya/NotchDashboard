@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Снимает экран в каждом состоянии, чтобы сверить с макетами. Работает и там,
-# где выреза нет (внешний монитор, CI): вырез рисуется заглушкой.
-#   scripts/build-app.sh && scripts/screenshots.sh   → build/screenshots/*.png
+# Снимает экран в каждом состоянии и видео анимаций, чтобы сверить с макетами.
+# Работает и там, где выреза нет (внешний монитор, CI): вырез рисуется
+# заглушкой, под окнами — фон «стола» с листов дизайна.
+#   scripts/build-app.sh && scripts/screenshots.sh   → build/screenshots/
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -9,19 +10,36 @@ bin="build/NotchDashboard.app/Contents/MacOS/NotchDashboard"
 out="build/screenshots"
 mkdir -p "$out"
 
+run() {
+  "$bin" --simulate-notch --backdrop "$@" &
+  pid=$!
+}
+
+stop() {
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+}
+
 shoot() {
   local name="$1"
   shift
-  "$bin" --simulate-notch "$@" &
-  local pid=$!
+  run "$@"
   sleep 4
   screencapture -x "$out/$name.png" || echo "Не удалось снять «$name»"
-  kill "$pid" 2>/dev/null || true
-  wait "$pid" 2>/dev/null || true
+  stop
 }
 
 shoot idle
 shoot hover --state hover
 shoot dashboard --state dashboard
 shoot section --section work
+
+# Видео сценария --demo: наведение, раскрытие, раздел, закрытие.
+screencapture -x -v -V 9 "$out/demo.mov" &
+recorder=$!
+sleep 1
+run --demo
+wait "$recorder" || echo "Не удалось записать видео"
+stop
+
 ls -l "$out"

@@ -10,6 +10,10 @@ import Foundation
 /// - `--state idle|hover|dashboard` — в каком состоянии открыться.
 ///   `hover` закрепляется и не сворачивается, когда курсор уходит.
 /// - `--section <блок>` — сразу открыть раздел, например `tasks`.
+/// - `--backdrop` — под окнами фон цвета «стола» с листов дизайна: на
+///   чёрных обоях виртуальной машины иначе не видно краёв и тени.
+/// - `--demo` — проиграть `DemoStep.script`, чтобы снять анимации на видео.
+///   Курсор при этом не отслеживается.
 public struct LaunchOptions: Hashable, Sendable {
     public enum State: String, Hashable, Sendable {
         case idle
@@ -20,10 +24,19 @@ public struct LaunchOptions: Hashable, Sendable {
     public var simulateNotch = false
     public var state: State = .idle
     public var section: DashboardBlock?
+    public var showsBackdrop = false
+    public var runsDemo = false
+
+    /// Курсор мешает закреплённому наведению и сценарию.
+    public var tracksPointer: Bool {
+        state != .hover && !runsDemo
+    }
 
     public init(arguments: [String], environment: [String: String] = [:]) {
         simulateNotch = arguments.contains("--simulate-notch")
             || environment["NOTCHDASHBOARD_SIMULATE_NOTCH"] == "1"
+        showsBackdrop = arguments.contains("--backdrop")
+        runsDemo = arguments.contains("--demo")
         if let value = Self.value(after: "--state", in: arguments), let state = State(rawValue: value) {
             self.state = state
         }
@@ -37,4 +50,20 @@ public struct LaunchOptions: Hashable, Sendable {
         guard let index = arguments.firstIndex(of: flag), arguments.indices.contains(index + 1) else { return nil }
         return arguments[index + 1]
     }
+}
+
+/// Шаг сценария `--demo`: событие через `at` секунд после запуска.
+public struct DemoStep: Hashable, Sendable {
+    public var at: Double
+    public var event: NotchStateMachine.Event
+
+    /// Наведение → дашборд из наведения → раздел → главная → вырез.
+    public static let script: [DemoStep] = [
+        DemoStep(at: 1.0, event: .pointerEntered),
+        DemoStep(at: 2.2, event: .notchClicked),
+        DemoStep(at: 3.6, event: .openSection(.tasks)),
+        DemoStep(at: 4.6, event: .escape),
+        DemoStep(at: 5.6, event: .escape),
+        DemoStep(at: 6.6, event: .pointerExited),
+    ]
 }
