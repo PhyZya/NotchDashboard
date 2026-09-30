@@ -35,6 +35,10 @@ jobs:
         run: scripts/build-app.sh
       - name: Снимки состояний
         run: scripts/screenshots.sh
+      - name: Проверка ввода
+        # Синтетическим событиям нужно разрешение, которого на раннере может не быть.
+        continue-on-error: true
+        run: scripts/input-check.sh
       - name: Загрузить снимки
         if: always()
         uses: actions/upload-artifact@v4

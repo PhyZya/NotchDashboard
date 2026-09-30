@@ -40,12 +40,15 @@ NotchDashboard — приложение для macOS, которое живёт 
 - `swift run NotchDashboard --simulate-notch` — запустить на macOS; флаг
   рисует заглушку выреза на экране без него. `--state hover|dashboard`
   и `--section <блок>` открывают нужное состояние.
-- `scripts/build-app.sh && scripts/screenshots.sh` — `.app` и снимки
-  в `build/screenshots`.
+- `scripts/build-app.sh && scripts/screenshots.sh` — `.app`, снимки
+  состояний и видео анимаций (`--demo`) в `build/screenshots`. Флаг
+  `--backdrop` кладёт под окна фон «стола» с листов дизайна.
+- `scripts/input-check.sh` — синтетические курсор, `⌥D`, `Esc` и клики
+  (`scripts/input.swift`), снимки после каждого шага.
 
 CI (`.github/workflows/ci.yml`) гоняет тесты в Linux, собирает приложение на
-macOS 27 и выкладывает снимки состояний артефактом `screenshots`. Без Mac
-проверяй изменения интерфейса по этим снимкам.
+macOS 27 и выкладывает снимки и видео артефактом `screenshots`. Без Mac
+проверяй изменения интерфейса по ним; кадры из видео достаются ffmpeg.
 
 ## Правила
 
