@@ -5,7 +5,8 @@ NotchDashboard — приложение для macOS, которое живёт 
 экран с задачами, фокус-таймером, музыкой, рабочими проектами, заметками,
 буфером обмена и ИИ-ассистентом.
 
-**Сейчас в репозитории нет кода**, только дизайн и спецификация.
+Сделан шаг 1 плана — каркас: вырез, «уши», наведение, раскрытие в дашборд,
+пустая главная по сетке v2, `⌥D`. Следующий — шаг 2 (`docs/SPEC.md`, «План»).
 
 ## Что читать
 
@@ -18,15 +19,44 @@ NotchDashboard — приложение для macOS, которое живёт 
 4. `design/v1/` — первые листы. Музыка, состояния выреза, анимация раскрытия
    и настройки горячих клавиш актуальны. Главная v1 устарела, её заменяет v2.
 
+## Код
+
+Пакет SwiftPM в корне (`Package.swift`):
+
+- `Sources/NotchCore` — логика без интерфейса, только Foundation: машина
+  состояний выреза, размеры и геометрия, сетка главной, горячие клавиши,
+  тексты. Всё, что можно проверить тестом, кладём сюда.
+- `Tests/NotchCoreTests` — тесты на Swift Testing.
+- `Sources/NotchDashboard` — приложение: AppKit (панели, курсор, Carbon)
+  и SwiftUI (`Views/`). `NotchController` отправляет события в
+  `NotchStateMachine` и превращает её эффекты в анимации и окна.
+- `Support/Info.plist`, `scripts/build-app.sh` — сборка `.app`,
+  `scripts/screenshots.sh` — снимки состояний.
+
+Команды:
+
+- `swift test` — тесты NotchCore. Работает и в Linux (Swift 6.2+): на Linux
+  приложение из `Package.swift` не подключается.
+- `swift run NotchDashboard --simulate-notch` — запустить на macOS; флаг
+  рисует заглушку выреза на экране без него. `--state hover|dashboard`
+  и `--section <блок>` открывают нужное состояние.
+- `scripts/build-app.sh && scripts/screenshots.sh` — `.app` и снимки
+  в `build/screenshots`.
+
+CI (`.github/workflows/ci.yml`) гоняет тесты в Linux, собирает приложение на
+macOS 27 и выкладывает снимки состояний артефактом `screenshots`. Без Mac
+проверяй изменения интерфейса по этим снимкам.
+
 ## Правила
 
 - Интерфейс на русском. Пишем коротко, как в макетах.
-- Стек: Swift, SwiftUI + AppKit, macOS 27 и новее, только Mac с вырезом.
+- Стек: Swift 6, SwiftUI + AppKit, macOS 27 и новее, только Mac с вырезом.
   Приложение без песочницы (нужны git, скрипты и `lsof`), распространяется
   вне App Store.
 - Ассистент по умолчанию на Claude (Anthropic API по HTTP, у Swift нет
   официального SDK), модели переключаются. Подробности — в `docs/SPEC.md`.
-- Цвета, размеры и тайминги бери из `docs/DESIGN.md`, а не придумывай заново.
+- Цвета, размеры и тайминги бери из `docs/DESIGN.md` (в коде — `Palette`,
+  `Motion`, `NotchMetrics`, `DashboardLayout`), а не придумывай заново.
 - Поменял дизайн — обнови `design/v2/index.html`, пересобери PNG
   (`NODE_PATH=$(npm root -g) node design/render.cjs`, нужен playwright)
   и поправь `docs/DESIGN.md`.

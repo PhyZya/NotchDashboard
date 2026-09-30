@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 /// Размеры состояний выреза в pt. Источник — таблица «Состояния выреза»
 /// в `docs/SPEC.md` и CSS `design/v2/index.html`.
@@ -49,7 +52,8 @@ public enum NotchMetrics {
 }
 
 /// Где на экране вырез. Координаты AppKit: начало внизу слева, y растёт вверх.
-public struct ScreenGeometry: Hashable, Sendable {
+/// `Equatable`, а не `Hashable`: в CoreGraphics у `CGRect` нет `Hashable`.
+public struct ScreenGeometry: Equatable, Sendable {
     /// Весь экран с вырезом.
     public var screenFrame: CGRect
     public var notchFrame: CGRect

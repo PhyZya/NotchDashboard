@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 /// Блоки главной v2 (`design/v2/Дашборд главная v2.png`).
 public enum DashboardBlock: String, CaseIterable, Hashable, Sendable, Identifiable {
@@ -70,7 +73,7 @@ public struct BlockStyle: Hashable, Sendable {
 ///   размера и уменьшается целиком (`scale` < 1).
 ///
 /// Координаты — от верхнего левого угла холста, в pt холста.
-public struct DashboardLayout: Hashable, Sendable {
+public struct DashboardLayout: Equatable, Sendable {
     public static let designSize = CGSize(width: 1440, height: 900)
     public static let margin: CGFloat = 24
     public static let gap: CGFloat = 16
@@ -92,7 +95,7 @@ public struct DashboardLayout: Hashable, Sendable {
     /// Над полосой ассистента промежуток 16 + 4.
     public static let assistantGap: CGFloat = 20
 
-    public struct Item: Hashable, Sendable, Identifiable {
+    public struct Item: Equatable, Sendable, Identifiable {
         public var block: DashboardBlock
         public var frame: CGRect
         public var id: DashboardBlock { block }
