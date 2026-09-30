@@ -42,26 +42,26 @@ public enum DashboardBlock: String, CaseIterable, Hashable, Sendable, Identifiab
     public var style: BlockStyle {
         switch self {
         case .tasks:
-            BlockStyle(background: Palette.purple, foreground: Palette.white, goBackground: Palette.white.opacity(0.2))
+            BlockStyle(background: DesignPalette.purple, foreground: DesignPalette.white, goBackground: DesignPalette.white.opacity(0.2))
         case .miniApps, .work:
-            BlockStyle(background: Palette.surface, foreground: Palette.ink, goBackground: Palette.bg)
+            BlockStyle(background: DesignPalette.surface, foreground: DesignPalette.ink, goBackground: DesignPalette.bg)
         case .music:
-            BlockStyle(background: Palette.red, foreground: Palette.ink, goBackground: Palette.ink.opacity(0.1))
+            BlockStyle(background: DesignPalette.red, foreground: DesignPalette.ink, goBackground: DesignPalette.ink.opacity(0.1))
         case .assistant, .focus:
-            BlockStyle(background: Palette.dark, foreground: Palette.white, goBackground: Palette.dark2)
+            BlockStyle(background: DesignPalette.dark, foreground: DesignPalette.white, goBackground: DesignPalette.dark2)
         case .notes:
-            BlockStyle(background: Palette.yellow, foreground: Palette.ink, goBackground: Palette.yellowGo)
+            BlockStyle(background: DesignPalette.yellow, foreground: DesignPalette.ink, goBackground: DesignPalette.yellowGo)
         case .clipboard:
-            BlockStyle(background: Palette.blue, foreground: Palette.white, goBackground: Palette.white.opacity(0.18))
+            BlockStyle(background: DesignPalette.blue, foreground: DesignPalette.white, goBackground: DesignPalette.white.opacity(0.18))
         }
     }
 }
 
 /// Цвета блока: фон, заголовок и кружок со стрелкой ↗.
 public struct BlockStyle: Hashable, Sendable {
-    public var background: RGBColor
-    public var foreground: RGBColor
-    public var goBackground: RGBColor
+    public var background: DesignColor
+    public var foreground: DesignColor
+    public var goBackground: DesignColor
 }
 
 /// Раскладка главной. Холст макета — 1440 × 900 pt; на другом экране

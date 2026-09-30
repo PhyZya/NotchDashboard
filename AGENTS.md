@@ -55,7 +55,7 @@ macOS 27 и выкладывает снимки состояний артефа�
   вне App Store.
 - Ассистент по умолчанию на Claude (Anthropic API по HTTP, у Swift нет
   официального SDK), модели переключаются. Подробности — в `docs/SPEC.md`.
-- Цвета, размеры и тайминги бери из `docs/DESIGN.md` (в коде — `Palette`,
+- Цвета, размеры и тайминги бери из `docs/DESIGN.md` (в коде — `DesignPalette`,
   `Motion`, `NotchMetrics`, `DashboardLayout`), а не придумывай заново.
 - Поменял дизайн — обнови `design/v2/index.html`, пересобери PNG
   (`NODE_PATH=$(npm root -g) node design/render.cjs`, нужен playwright)
