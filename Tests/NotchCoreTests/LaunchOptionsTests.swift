@@ -29,9 +29,10 @@ struct LaunchOptionsTests {
         #expect(!plain.showsBackdrop && !plain.runsDemo)
         #expect(plain.tracksPointer)
 
-        let demo = LaunchOptions(arguments: ["--demo", "--backdrop"])
-        #expect(demo.runsDemo && demo.showsBackdrop)
+        let demo = LaunchOptions(arguments: ["--demo", "--backdrop", "--sample"])
+        #expect(demo.runsDemo && demo.showsBackdrop && demo.showsSample)
         #expect(!demo.tracksPointer)
+        #expect(!plain.showsSample)
 
         #expect(!LaunchOptions(arguments: ["--state", "hover"]).tracksPointer)
     }
@@ -51,6 +52,9 @@ struct LaunchOptionsTests {
             }
         }
         #expect(effects.contains(.expandHover))
+        // Дашборд открывает кнопка ↗ в панели наведения, а не клик по вырезу.
+        #expect(DemoStep.script.contains { $0.event == .dashboardButtonTapped })
+        #expect(!DemoStep.script.contains { $0.event == .notchClicked })
         #expect(effects.contains(.openDashboard(from: .hover)))
         #expect(effects.contains(.showRoute(.section(.tasks))))
         #expect(effects.contains(.showRoute(.home)))

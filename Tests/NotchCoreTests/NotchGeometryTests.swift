@@ -43,9 +43,9 @@ struct NotchGeometryTests {
         #expect(geometry.hangingFrame(size: ears) == CGRect(x: 612, y: 944, width: 288, height: 38))
 
         let hover = NotchMetrics.shapeSize(for: .hover, notch: geometry.notchSize)
-        #expect(hover == CGSize(width: 520, height: 168))
-        #expect(geometry.hangingFrame(size: hover) == CGRect(x: 496, y: 814, width: 520, height: 168))
-        #expect(geometry.localHangingRect(size: hover) == CGRect(x: 496, y: 0, width: 520, height: 168))
+        #expect(hover == CGSize(width: 520, height: 160))
+        #expect(geometry.hangingFrame(size: hover) == CGRect(x: 496, y: 822, width: 520, height: 160))
+        #expect(geometry.localHangingRect(size: hover) == CGRect(x: 496, y: 0, width: 520, height: 160))
 
         #expect(NotchMetrics.shapeSize(for: .dashboard, notch: geometry.notchSize) == ears)
     }
@@ -56,13 +56,48 @@ struct NotchGeometryTests {
         #expect(zone.contains(CGPoint(x: 899, y: 982)))
         #expect(!zone.contains(CGPoint(x: 611, y: 960)))
         #expect(!zone.contains(CGPoint(x: 700, y: 943)))
-        #expect(geometry.hotZone(for: .hover).contains(CGPoint(x: 500, y: 820)))
+        #expect(geometry.hotZone(for: .hover).contains(CGPoint(x: 500, y: 825)))
+        #expect(!geometry.hotZone(for: .hover).contains(CGPoint(x: 500, y: 820)))
+        #expect(geometry.hotZone(for: .hover, hover: .sample).contains(CGPoint(x: 500, y: 700)))
+    }
+
+    /// Высоты с листа `design/v2/Наведение.png`: там вырез 32 pt, здесь 38.
+    @Test func hoverPanelHeightFollowsContent() {
+        let notch: CGFloat = 38
+        #expect(HoverLayout.height(for: HoverContent(), notchHeight: notch) == 160)
+
+        var tasksOnly = HoverContent.sample
+        tasksOnly.nowPlaying = nil
+        #expect(HoverLayout.height(for: tasksOnly, notchHeight: notch) == 248)
+        #expect(HoverLayout.height(for: .sample, notchHeight: notch) == 322)
+        #expect(HoverLayout.height(for: .sample, notchHeight: 32) == 316)
+
+        var musicOnly = HoverContent.sample
+        musicOnly.hotTasks = []
+        #expect(HoverLayout.height(for: musicOnly, notchHeight: notch) == 234)
+
+        var many = HoverContent.sample
+        many.hotTasks += many.hotTasks.map { HotTask(id: $0.id + "-2", title: $0.title, meta: $0.meta) }
+        #expect(many.visibleTasks.count == 3)
+        #expect(HoverLayout.height(for: many, notchHeight: notch) == 322)
+        #expect(HoverLayout.largestSize(notchHeight: notch) == CGSize(width: 520, height: 322))
+    }
+
+    @Test func hoverShapeUsesContentAndPanelCorner() {
+        let size = NotchMetrics.shapeSize(for: .hover, notch: geometry.notchSize, hover: .sample)
+        #expect(size == CGSize(width: 520, height: 322))
+        #expect(NotchMetrics.cornerRadius(for: .hover) == 26)
+        #expect(NotchMetrics.shapeSize(for: .idle, notch: geometry.notchSize, hover: .sample).height == 38)
+
+        // Вырез шире панели: панель растёт вместе с «ушами».
+        let wide = NotchMetrics.shapeSize(for: .hover, notch: CGSize(width: 460, height: 38))
+        #expect(wide.width == 548)
     }
 
     @Test func panelFitsLargestStateWithShadow() {
         let panel = NotchMetrics.panelSize(notch: geometry.notchSize)
         #expect(panel.width >= 520 + 2 * NotchMetrics.shadowMargin)
-        #expect(panel.height >= 168 + NotchMetrics.shadowMargin)
+        #expect(panel.height >= 322 + NotchMetrics.shadowMargin)
     }
 
     @Test func morphGoesFromOriginToTarget() {

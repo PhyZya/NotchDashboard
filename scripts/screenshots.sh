@@ -31,14 +31,15 @@ shoot() {
 
 shoot idle
 shoot hover --state hover
+shoot hover-sample --state hover --sample
 shoot dashboard --state dashboard
 shoot section --section work
 
-# Видео сценария --demo: наведение, раскрытие, раздел, закрытие.
-screencapture -x -v -V 9 "$out/demo.mov" &
+# Видео сценария --demo: панель наведения, ↗, дашборд, раздел, закрытие.
+screencapture -x -v -V 10 "$out/demo.mov" &
 recorder=$!
 sleep 1
-run --demo
+run --demo --sample
 wait "$recorder" || echo "Не удалось записать видео"
 stop
 

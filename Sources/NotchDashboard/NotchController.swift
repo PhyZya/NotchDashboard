@@ -26,6 +26,9 @@ final class NotchController {
     }
 
     func start() {
+        if options.showsSample {
+            model.hover = .sample
+        }
         updateScreen()
         observeSystem()
 
@@ -46,8 +49,46 @@ final class NotchController {
 
     // MARK: - Действия из интерфейса
 
+    /// Клик по «ушам» раскрывает панель наведения, клик по вырезу в дашборде сворачивает его.
     func notchClicked() {
         send(.notchClicked)
+    }
+
+    /// Кнопка ↗ в панели наведения.
+    func dashboardButtonTapped() {
+        send(.dashboardButtonTapped)
+    }
+
+    /// Пункт «Открыть дашборд» в меню по правому клику — как `⌥D`.
+    func toggleDashboard() {
+        send(.toggleDashboard)
+    }
+
+    /// Кружок в строке горящей задачи. Пока задачи есть только в образце
+    /// `--sample`, отметка живёт до перезапуска; хранилище задач — шаг 2 плана.
+    func toggleTask(_ id: HotTask.ID) {
+        withAnimation(.easeOut(duration: 0.2)) {
+            model.hover.toggleTask(id: id)
+        }
+    }
+
+    /// Кнопки плеера. Spotify подключим на шаге 3 плана, пока пауза
+    /// переключается только в образце `--sample`.
+    func music(_ command: MusicCommand) {
+        guard var track = model.hover.nowPlaying else { return }
+        switch command {
+        case .playPause:
+            track.isPlaying.toggle()
+        case .previous, .next:
+            return
+        }
+        model.hover.nowPlaying = track
+    }
+
+    /// Клик по обложке открывает Spotify.
+    func openSpotify() {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.spotify.client") else { return }
+        NSWorkspace.shared.open(url)
     }
 
     func closeButtonTapped() {
@@ -163,7 +204,7 @@ final class NotchController {
             // Открыли снова, пока форма сжималась: растём из текущего положения.
             animateOpen()
         } else {
-            let size = NotchMetrics.shapeSize(for: phase, notch: geometry.notchSize)
+            let size = NotchMetrics.shapeSize(for: phase, notch: geometry.notchSize, hover: model.hover)
             model.morphOrigin = geometry.localHangingRect(size: size)
             model.morphOriginRadius = NotchMetrics.cornerRadius(for: phase)
             model.morphProgress = 0
@@ -243,30 +284,26 @@ final class NotchController {
 
     private func refreshPointer() {
         guard let geometry = model.geometry else { return }
-        let inside = geometry.hotZone(for: machine.phase).contains(NSEvent.mouseLocation)
+        let inside = geometry.hotZone(for: machine.phase, hover: model.hover).contains(NSEvent.mouseLocation)
         send(inside ? .pointerEntered : .pointerExited)
     }
 
     /// Панель у выреза пропускает клики насквозь везде, кроме своей формы.
     private func updateMouseTransparency() {
         guard let geometry = model.geometry, let panel = notchPanel else { return }
-        let inside = geometry.hotZone(for: machine.phase).contains(NSEvent.mouseLocation)
+        let inside = geometry.hotZone(for: machine.phase, hover: model.hover).contains(NSEvent.mouseLocation)
         let ignores = machine.phase == .dashboard || !inside
         if panel.ignoresMouseEvents != ignores {
             panel.ignoresMouseEvents = ignores
         }
     }
 
-    /// Жест двумя пальцами вниз по вырезу открывает дашборд.
+    /// Жест двумя пальцами вниз по вырезу открывает дашборд. Колесо мыши —
+    /// нет: его легко задеть, пока курсор на панели наведения.
     private func handleNotchScroll(_ event: NSEvent) -> Bool {
-        guard machine.phase != .dashboard, event.momentumPhase.isEmpty else { return true }
+        guard machine.phase != .dashboard, event.momentumPhase.isEmpty, !event.phase.isEmpty else { return true }
         // Вниз — в сторону пользователя, с учётом «естественной» прокрутки.
         let down = event.isDirectionInvertedFromDevice ? event.scrollingDeltaY : -event.scrollingDeltaY
-        if event.phase.isEmpty {
-            // Колесо мыши: каждый щелчок сам по себе.
-            if down > 0 { send(.toggleDashboard) }
-            return true
-        }
         if event.phase.contains(.began) {
             scrollDistance = 0
             scrollFired = false
@@ -393,6 +430,12 @@ final class NotchController {
             }
         })
     }
+}
+
+enum MusicCommand {
+    case previous
+    case playPause
+    case next
 }
 
 extension Animation {

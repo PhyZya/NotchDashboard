@@ -38,6 +38,11 @@ public enum RussianText {
         format(date, "HH:mm", timeZone)
     }
 
+    /// Шапка панели наведения: «3 из 8 сделано».
+    public static func tasksDone(_ done: Int, of total: Int) -> String {
+        "\(done) из \(total) сделано"
+    }
+
     /// Подпись под «На сегодня всё горящее сделано» при наведении.
     public static func tasksLeft(_ count: Int) -> String {
         guard count > 0 else { return "Задач на сегодня больше нет" }

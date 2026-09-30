@@ -5,7 +5,7 @@ import Foundation
 public enum NotchPhase: Hashable, Sendable {
     /// Покой: форма сливается с вырезом, видны «уши».
     case idle
-    /// Наведение: вырез раскрылся вниз.
+    /// Наведение: из выреза вытекла панель с музыкой и горящими задачами.
     case hover
     /// Дашборд на весь экран.
     case dashboard
@@ -25,7 +25,11 @@ public struct NotchStateMachine: Sendable {
         case pointerExited
         /// Курсор пробыл на вырезе `Motion.hoverDelay`.
         case hoverDelayElapsed
+        /// Клик по «ушам» раскрывает панель наведения сразу, клик по вырезу
+        /// в дашборде сворачивает его. Дашборд из выреза кликом не открывается.
         case notchClicked
+        /// Кнопка ↗ в панели наведения — единственный клик, который открывает дашборд.
+        case dashboardButtonTapped
         /// `⌥D` или жест вниз по вырезу.
         case toggleDashboard
         /// Кнопка «закрыть» в шапке дашборда.
@@ -77,7 +81,21 @@ public struct NotchStateMachine: Sendable {
             phase = .hover
             return [.expandHover]
 
-        case .notchClicked, .toggleDashboard:
+        case .notchClicked:
+            switch phase {
+            case .idle:
+                phase = .hover
+                return [.cancelHoverTimer, .expandHover]
+            case .hover:
+                return []
+            case .dashboard:
+                return close()
+            }
+
+        case .dashboardButtonTapped:
+            return phase == .hover ? open() : []
+
+        case .toggleDashboard:
             return phase == .dashboard ? close() : open()
 
         case .closeDashboard, .lostFocus:

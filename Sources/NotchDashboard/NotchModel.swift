@@ -25,6 +25,7 @@ final class NotchModel {
     var isDashboardLight = false
     var showsDashboardContent = false
 
-    /// Задачи на сегодня для «уха» и наведения. Появятся вместе с задачами (шаг 2 плана).
-    var tasksToday = 0
+    /// Что показывает панель наведения и счётчик в «ухе». Задачи появятся
+    /// на шаге 2 плана, Spotify — на шаге 3; до тех пор пусто или образец `--sample`.
+    var hover = HoverContent()
 }

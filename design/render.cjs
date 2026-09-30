@@ -9,6 +9,7 @@ const sheets = {
   "#dashboard": "Дашборд главная v2.png",
   "#sheet-focus": "Фокус-таймер.png",
   "#sheet-work": "Работа.png",
+  "#sheet-hover": "Наведение.png",
 };
 
 (async () => {

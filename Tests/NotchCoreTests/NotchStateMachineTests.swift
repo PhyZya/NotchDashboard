@@ -30,15 +30,47 @@ struct NotchStateMachineTests {
         #expect(machine.send(.pointerExited).isEmpty)
     }
 
-    @Test func clickOpensDashboardFromIdleAndHover() {
+    @Test func clickOnEarsExpandsHoverWithoutDelay() {
+        var machine = NotchStateMachine()
+        machine.send(.pointerEntered)
+        #expect(machine.send(.notchClicked) == [.cancelHoverTimer, .expandHover])
+        #expect(machine.phase == .hover)
+        // Таймер наведения, который успел сработать, ничего не меняет.
+        #expect(machine.send(.hoverDelayElapsed).isEmpty)
+    }
+
+    @Test func clickOnHoverPanelDoesNotOpenDashboard() {
+        var machine = NotchStateMachine()
+        machine.send(.pointerEntered)
+        machine.send(.hoverDelayElapsed)
+        #expect(machine.send(.notchClicked).isEmpty)
+        #expect(machine.phase == .hover)
+    }
+
+    @Test func dashboardButtonOpensDashboardFromHover() {
+        var machine = NotchStateMachine()
+        machine.send(.pointerEntered)
+        machine.send(.hoverDelayElapsed)
+        #expect(machine.send(.dashboardButtonTapped) == [.cancelHoverTimer, .openDashboard(from: .hover)])
+        #expect(machine.phase == .dashboard)
+        #expect(machine.send(.dashboardButtonTapped).isEmpty)
+    }
+
+    @Test func dashboardButtonDoesNothingOutsideHover() {
+        var machine = NotchStateMachine()
+        #expect(machine.send(.dashboardButtonTapped).isEmpty)
+        #expect(machine.phase == .idle)
+    }
+
+    @Test func toggleOpensDashboardFromIdleAndHover() {
         var idle = NotchStateMachine()
-        #expect(idle.send(.notchClicked) == [.cancelHoverTimer, .openDashboard(from: .idle)])
+        #expect(idle.send(.toggleDashboard) == [.cancelHoverTimer, .openDashboard(from: .idle)])
         #expect(idle.phase == .dashboard)
 
         var hover = NotchStateMachine()
         hover.send(.pointerEntered)
         hover.send(.hoverDelayElapsed)
-        #expect(hover.send(.notchClicked) == [.cancelHoverTimer, .openDashboard(from: .hover)])
+        #expect(hover.send(.toggleDashboard) == [.cancelHoverTimer, .openDashboard(from: .hover)])
         #expect(hover.phase == .dashboard)
     }
 
@@ -88,7 +120,8 @@ struct NotchStateMachineTests {
     @Test func noHoverRightAfterClosingByClickUntilPointerLeaves() {
         var machine = NotchStateMachine()
         machine.send(.pointerEntered)
-        machine.send(.notchClicked)
+        machine.send(.hoverDelayElapsed)
+        machine.send(.dashboardButtonTapped)
         machine.send(.notchClicked)
         #expect(machine.phase == .idle)
         #expect(!machine.isHoverArmed)
@@ -97,6 +130,18 @@ struct NotchStateMachineTests {
         machine.send(.pointerExited)
         #expect(machine.isHoverArmed)
         #expect(machine.send(.pointerEntered) == [.startHoverTimer])
+    }
+
+    /// Сам по себе курсор после закрытия панель не раскроет, а клик — раскроет.
+    @Test func clickExpandsHoverEvenRightAfterClosing() {
+        var machine = NotchStateMachine()
+        machine.send(.pointerEntered)
+        machine.send(.toggleDashboard)
+        machine.send(.notchClicked)
+        #expect(!machine.isHoverArmed)
+        #expect(machine.send(.notchClicked) == [.cancelHoverTimer, .expandHover])
+        #expect(machine.send(.pointerExited) == [.cancelHoverTimer, .collapseHover])
+        #expect(machine.phase == .idle)
     }
 
     @Test func hoverStaysArmedWhenClosedAwayFromNotch() {

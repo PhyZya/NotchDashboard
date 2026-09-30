@@ -47,7 +47,10 @@ public enum DesignPalette {
     public static let blue = DesignColor(hex: 0x2F6BFF)
     public static let dark = DesignColor(hex: 0x17171A)
     public static let dark2 = DesignColor(hex: 0x26262B)
+    public static let dark3 = DesignColor(hex: 0x34343B)
     public static let darkText2 = DesignColor(hex: 0xA1A1A8)
+    /// Красный текст на тёмном: «Просрочено» в панели наведения.
+    public static let redOnDark = DesignColor(hex: 0xFF6B5E)
     public static let ok = DesignColor(hex: 0x2FBF5B)
     public static let notch = DesignColor(hex: 0x000000)
 

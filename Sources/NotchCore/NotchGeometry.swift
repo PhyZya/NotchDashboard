@@ -12,11 +12,6 @@ public enum NotchMetrics {
     public static let earPadding: CGFloat = 12
     public static let earsCornerRadius: CGFloat = 13
 
-    /// Наведение: вырез раскрывается вниз до 520 × 168.
-    public static let hoverSize = CGSize(width: 520, height: 168)
-    /// Снято с мини-плеера на листе `design/v1/Музыка.png`.
-    public static let hoverCornerRadius: CGFloat = 26
-
     /// Запас вокруг формы под тень раскрытой панели.
     public static let shadowMargin: CGFloat = 56
 
@@ -28,26 +23,32 @@ public enum NotchMetrics {
         CGSize(width: notch.width + 2 * earWidth, height: notch.height)
     }
 
-    /// Размер чёрной формы у выреза. Пока открыт дашборд, форма у выреза
-    /// в покое: её закрывает форма дашборда, которая из неё выросла.
-    public static func shapeSize(for phase: NotchPhase, notch: CGSize) -> CGSize {
+    /// Размер чёрной формы у выреза. При наведении — панель `HoverLayout`,
+    /// высота по содержимому. Пока открыт дашборд, форма у выреза в покое:
+    /// её закрывает форма дашборда, которая из неё выросла.
+    public static func shapeSize(for phase: NotchPhase, notch: CGSize, hover: HoverContent = HoverContent()) -> CGSize {
         let ears = earsSize(notch: notch)
         switch phase {
         case .idle, .dashboard:
             return ears
         case .hover:
-            return CGSize(width: max(hoverSize.width, ears.width), height: max(hoverSize.height, notch.height))
+            return fitting(HoverLayout.size(for: hover, notchHeight: notch.height), ears: ears)
         }
     }
 
     public static func cornerRadius(for phase: NotchPhase) -> CGFloat {
-        phase == .hover ? hoverCornerRadius : earsCornerRadius
+        phase == .hover ? HoverLayout.cornerRadius : earsCornerRadius
     }
 
     /// Окно у выреза: самое большое состояние плюс место под тень.
     public static func panelSize(notch: CGSize) -> CGSize {
-        let largest = shapeSize(for: .hover, notch: notch)
+        let largest = fitting(HoverLayout.largestSize(notchHeight: notch.height), ears: earsSize(notch: notch))
         return CGSize(width: largest.width + 2 * shadowMargin, height: largest.height + shadowMargin)
+    }
+
+    /// Панель не уже «ушей»: на широком вырезе она растёт вместе с ним.
+    private static func fitting(_ size: CGSize, ears: CGSize) -> CGSize {
+        CGSize(width: max(size.width, ears.width), height: max(size.height, ears.height))
     }
 }
 
@@ -123,10 +124,10 @@ public struct ScreenGeometry: Equatable, Sendable {
 
     public var localNotchRect: CGRect { localHangingRect(size: notchSize) }
 
-    /// Где курсор считается «на вырезе». Сверху запас в 2 pt: курсор
-    /// упирается в край экрана и может оказаться ровно на нём.
-    public func hotZone(for phase: NotchPhase) -> CGRect {
-        let frame = hangingFrame(size: NotchMetrics.shapeSize(for: phase, notch: notchSize))
+    /// Где курсор считается «на вырезе»: форма в текущем состоянии. Сверху
+    /// запас в 2 pt: курсор упирается в край экрана и может оказаться ровно на нём.
+    public func hotZone(for phase: NotchPhase, hover: HoverContent = HoverContent()) -> CGRect {
+        let frame = hangingFrame(size: NotchMetrics.shapeSize(for: phase, notch: notchSize, hover: hover))
         return CGRect(x: frame.minX, y: frame.minY, width: frame.width, height: frame.height + 2)
     }
 }

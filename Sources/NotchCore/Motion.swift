@@ -24,4 +24,14 @@ public enum Motion {
 
     /// Наведение: вырез раскрывается, если курсор задержался на нём 150 мс.
     public static let hoverDelay = 0.15
+
+    /// Панель наведения вытекает той же пружиной, а её строки (шапка, плеер,
+    /// каждая задача) проявляются сверху вниз: 280 мс с задержкой 100 мс
+    /// и шагом 35 мс — прозрачность, размытие `blocksBlur` → 0, сдвиг на 8 pt.
+    /// Курсор ушёл — строки гаснут за 100 мс, форма втягивается пружиной.
+    public static let hoverRowsDelay = 0.10
+    public static let hoverRowsStagger = 0.035
+    public static let hoverRowsDuration = 0.28
+    public static let hoverRowsOffset = 8.0
+    public static let hoverRowsOutDuration = 0.10
 }

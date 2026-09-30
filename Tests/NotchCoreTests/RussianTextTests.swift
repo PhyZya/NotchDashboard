@@ -34,6 +34,10 @@ struct RussianTextTests {
         #expect(RussianText.time(date, timeZone: moscow) == "14:32")
     }
 
+    @Test func tasksDone() {
+        #expect(RussianText.tasksDone(3, of: 8) == "3 из 8 сделано")
+    }
+
     @Test func tasksLeft() {
         #expect(RussianText.tasksLeft(0) == "Задач на сегодня больше нет")
         #expect(RussianText.tasksLeft(1) == "Ещё 1 задача на сегодня")

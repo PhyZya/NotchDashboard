@@ -14,6 +14,8 @@ import Foundation
 ///   чёрных обоях виртуальной машины иначе не видно краёв и тени.
 /// - `--demo` — проиграть `DemoStep.script`, чтобы снять анимации на видео.
 ///   Курсор при этом не отслеживается.
+/// - `--sample` — панель наведения с музыкой и задачами из макета
+///   (`HoverContent.sample`), пока нет настоящих задач и Spotify.
 public struct LaunchOptions: Hashable, Sendable {
     public enum State: String, Hashable, Sendable {
         case idle
@@ -26,6 +28,7 @@ public struct LaunchOptions: Hashable, Sendable {
     public var section: DashboardBlock?
     public var showsBackdrop = false
     public var runsDemo = false
+    public var showsSample = false
 
     /// Курсор мешает закреплённому наведению и сценарию.
     public var tracksPointer: Bool {
@@ -37,6 +40,7 @@ public struct LaunchOptions: Hashable, Sendable {
             || environment["NOTCHDASHBOARD_SIMULATE_NOTCH"] == "1"
         showsBackdrop = arguments.contains("--backdrop")
         runsDemo = arguments.contains("--demo")
+        showsSample = arguments.contains("--sample")
         if let value = Self.value(after: "--state", in: arguments), let state = State(rawValue: value) {
             self.state = state
         }
@@ -57,13 +61,13 @@ public struct DemoStep: Hashable, Sendable {
     public var at: Double
     public var event: NotchStateMachine.Event
 
-    /// Наведение → дашборд из наведения → раздел → главная → вырез.
+    /// Наведение → кнопка ↗ → дашборд из панели → раздел → главная → вырез.
     public static let script: [DemoStep] = [
         DemoStep(at: 1.0, event: .pointerEntered),
-        DemoStep(at: 2.2, event: .notchClicked),
-        DemoStep(at: 3.6, event: .openSection(.tasks)),
-        DemoStep(at: 4.6, event: .escape),
-        DemoStep(at: 5.6, event: .escape),
-        DemoStep(at: 6.6, event: .pointerExited),
+        DemoStep(at: 2.6, event: .dashboardButtonTapped),
+        DemoStep(at: 4.0, event: .openSection(.tasks)),
+        DemoStep(at: 5.0, event: .escape),
+        DemoStep(at: 6.0, event: .escape),
+        DemoStep(at: 7.0, event: .pointerExited),
     ]
 }

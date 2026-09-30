@@ -18,7 +18,9 @@ enum Theme {
     static var yellow: Color { Color(DesignPalette.yellow) }
     static var dark: Color { Color(DesignPalette.dark) }
     static var dark2: Color { Color(DesignPalette.dark2) }
+    static var dark3: Color { Color(DesignPalette.dark3) }
     static var darkText2: Color { Color(DesignPalette.darkText2) }
+    static var redOnDark: Color { Color(DesignPalette.redOnDark) }
     static var ok: Color { Color(DesignPalette.ok) }
     static var notch: Color { Color(DesignPalette.notch) }
     static var clock: Color { Color(DesignPalette.clock) }
