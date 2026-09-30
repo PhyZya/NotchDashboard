@@ -21,8 +21,11 @@ NotchDashboard — приложение для macOS, которое живёт 
 ## Правила
 
 - Интерфейс на русском. Пишем коротко, как в макетах.
-- Стек: Swift, SwiftUI + AppKit, macOS. Приложение без песочницы
-  (нужны git, скрипты и `lsof`), распространяется вне App Store.
+- Стек: Swift, SwiftUI + AppKit, macOS 27 и новее, только Mac с вырезом.
+  Приложение без песочницы (нужны git, скрипты и `lsof`), распространяется
+  вне App Store.
+- Ассистент по умолчанию на Claude (Anthropic API по HTTP, у Swift нет
+  официального SDK), модели переключаются. Подробности — в `docs/SPEC.md`.
 - Цвета, размеры и тайминги бери из `docs/DESIGN.md`, а не придумывай заново.
 - Поменял дизайн — обнови `design/v2/index.html`, пересобери PNG
   (`NODE_PATH=$(npm root -g) node design/render.cjs`, нужен playwright)
