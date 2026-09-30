@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Тёмная тема по мотивам тёмного оформления macOS: чёрный, серые, белый.
+/* Тёмная тема (основная) по мотивам тёмного оформления macOS: чёрный, серые, белый.
    Цвет — только в статусах, таймере, обложке трека и на «+ Запись». */
 :root{
   --bg:#0B0B0D;                                   /* фон дашборда, сливается с вырезом */
@@ -20,11 +20,37 @@
   --seg-on:#636366;                               /* выбранный сегмент */
   --label:#F5F5F7; --label-2:rgba(235,235,245,.62); --label-3:rgba(235,235,245,.38);
   --sep:rgba(255,255,255,.08);
-  --accent:#0A84FF;                               /* акцент: «+ Запись» */
+  --accent:#0A84FF;                               /* системный цвет акцента macOS, по умолчанию синий: «+ Запись» */
   --orange:#FF9F0A; --green:#30D158; --red:#FF453A; --yellow:#FFD60A;
   --cover:#FF453A;                                /* цвет обложки текущего трека */
+  --on-label:#111; --seg-on-label:#fff;           /* текст на светлой кнопке и на выбранном сегменте */
+  --ov-1:rgba(255,255,255,.04); --ov-2:rgba(255,255,255,.1); --ov-3:rgba(255,255,255,.16); --ov-4:rgba(255,255,255,.24);
+  --hair:rgba(235,235,245,.34); --dash:rgba(235,235,245,.18); --edge:rgba(255,255,255,.05);
+  --shadow:rgba(0,0,0,.45); --glow-c:rgba(120,120,140,.16);
+  --glass-top:rgba(255,255,255,.13); --glass-bot:rgba(255,255,255,.045); --glass-hi:rgba(255,255,255,.16); --glass-lo:rgba(0,0,0,.35);
+  --glass-rim:rgba(255,255,255,.55); --glass-rim-2:rgba(255,255,255,.32);
+  --clear-top:rgba(255,255,255,.09); --clear-bot:rgba(255,255,255,.02);
+  --music-bg:#161618; --cover-mix:62%; --ring-track:#2C2C2E;
   --font:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   --mono:"SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
+}
+/* Светлая тема — второй вариант в настройках. Те же правила: блоки без цвета,
+   цвет только со смыслом. Цвета системные для светлого оформления macOS. */
+:root[data-theme="light"]{
+  --bg:#E8E8ED; --surface:#FFFFFF; --raised:#F2F2F7; --raised-2:#E5E5EA;
+  --fill:rgba(120,120,128,.16); --fill-2:rgba(120,120,128,.1); --seg-on:#FFFFFF;
+  --label:#1D1D1F; --label-2:rgba(60,60,67,.72); --label-3:rgba(60,60,67,.46);
+  --sep:rgba(0,0,0,.08);
+  --accent:#007AFF;
+  --orange:#FF9500; --green:#28CD41; --red:#FF3B30; --yellow:#FFCC00;
+  --on-label:#fff; --seg-on-label:var(--label);
+  --ov-1:rgba(0,0,0,.03); --ov-2:rgba(0,0,0,.07); --ov-3:rgba(0,0,0,.1); --ov-4:rgba(0,0,0,.18);
+  --hair:rgba(60,60,67,.3); --dash:rgba(60,60,67,.22); --edge:rgba(0,0,0,.04);
+  --shadow:rgba(0,0,0,.12); --glow-c:rgba(255,255,255,.7);
+  --glass-top:rgba(255,255,255,.8); --glass-bot:rgba(255,255,255,.52); --glass-hi:rgba(255,255,255,.95); --glass-lo:rgba(0,0,0,.05);
+  --glass-rim:rgba(255,255,255,1); --glass-rim-2:rgba(255,255,255,.7);
+  --clear-top:rgba(120,120,128,.08); --clear-bot:rgba(120,120,128,.16);
+  --music-bg:#FFFFFF; --cover-mix:34%; --ring-track:#E5E5EA;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:#000}
@@ -40,19 +66,19 @@ kbd{font-family:var(--font);font-weight:600}
    Только слой управления поверх контента: шапка, ассистент, кнопки плеера,
    иконки мини-приложений. Сами блоки — плотные поверхности. */
 .glass{position:relative;isolation:isolate;
-  background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.045));
+  background:linear-gradient(180deg,var(--glass-top),var(--glass-bot));
   -webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.16),inset 0 -1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.45)}
+  box-shadow:inset 0 1px 1px var(--glass-hi),inset 0 -1px 2px var(--glass-lo),0 8px 24px var(--shadow)}
 .glass::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
-  background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(255,255,255,.1) 28%,rgba(255,255,255,0) 52%,rgba(255,255,255,.1) 80%,rgba(255,255,255,.32));
+  background:linear-gradient(160deg,var(--glass-rim),rgba(255,255,255,.1) 28%,rgba(255,255,255,0) 52%,rgba(255,255,255,.1) 80%,var(--glass-rim-2));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
 .glass.tint{background:linear-gradient(180deg,rgba(64,156,255,.95),rgba(10,120,245,.9))}
-.glass.clear{background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.02));box-shadow:inset 0 1px 1px rgba(255,255,255,.12),inset 0 -1px 2px rgba(0,0,0,.3)}
+.glass.clear{background:linear-gradient(180deg,var(--clear-top),var(--clear-bot));box-shadow:inset 0 1px 1px var(--glass-hi),inset 0 -1px 2px var(--glass-lo)}
 
 /* ───────── Screen ───────── */
 .screen{position:relative;width:1440px;height:900px;background:var(--bg);overflow:hidden;margin:0 auto}
 /* еле заметный свет из выреза, чтобы стеклу было что преломлять */
-.screen::before{content:"";position:absolute;left:50%;top:-240px;width:1100px;height:520px;margin-left:-550px;border-radius:50%;background:radial-gradient(closest-side,rgba(120,120,140,.16),transparent);pointer-events:none}
+.screen::before{content:"";position:absolute;left:50%;top:-240px;width:1100px;height:520px;margin-left:-550px;border-radius:50%;background:radial-gradient(closest-side,var(--glow-c),transparent);pointer-events:none}
 .menubar{position:absolute;inset:0 0 auto 0;height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
 .brand{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;letter-spacing:-.01em}
 .brand-notch{width:15px;height:10px;background:var(--label);border-radius:2px 2px 5px 5px}
@@ -72,7 +98,7 @@ kbd{font-family:var(--font);font-weight:600}
 
 .grid{position:absolute;left:24px;top:112px;width:1392px;height:764px;display:grid;grid-template-columns:348px 664px 348px;gap:16px}
 .col{display:flex;flex-direction:column;gap:16px;min-height:0}
-.block{position:relative;border-radius:22px;padding:20px;display:flex;flex-direction:column;overflow:hidden;min-height:0;background:var(--surface);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.block{position:relative;border-radius:22px;padding:20px;display:flex;flex-direction:column;overflow:hidden;min-height:0;background:var(--surface);box-shadow:inset 0 0 0 1px var(--edge)}
 .head{display:flex;align-items:center;justify-content:space-between;height:32px;flex:none;gap:10px}
 .title{font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
 .sub{font-size:13px;color:var(--label-3);font-weight:500}
@@ -84,7 +110,7 @@ kbd{font-family:var(--font);font-weight:600}
 /* сегментированный контрол, как в macOS */
 .seg{display:flex;padding:2px;border-radius:9px;background:var(--fill-2);gap:0}
 .seg button{flex:1;height:24px;border-radius:7px;font-size:12px;font-weight:600;color:var(--label-2);padding:0 10px;white-space:nowrap}
-.seg button.on{background:var(--seg-on);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.seg button.on{background:var(--seg-on);color:var(--seg-on-label);box-shadow:0 1px 3px var(--shadow)}
 
 /* Tasks */
 .tasks{flex:0 0 536px}
@@ -94,13 +120,13 @@ kbd{font-family:var(--font);font-weight:600}
 .t-count span{font-size:16px;font-weight:600;color:var(--label-2)}
 .week{display:flex;gap:5px;align-items:flex-end;height:44px}
 .wk{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
-.wk i{display:block;width:8px;border-radius:3px;background:rgba(255,255,255,.24)}
+.wk i{display:block;width:8px;border-radius:3px;background:var(--ov-4)}
 .wk.today i{background:var(--label)}
-.wk.future i{height:4px!important;background:rgba(255,255,255,.1)}
+.wk.future i{height:4px!important;background:var(--ov-2)}
 .wk span{font-size:9.5px;font-weight:600;color:var(--label-3);line-height:10px}
 .wk.today span{color:var(--label)}
 .segs{display:flex;gap:4px;margin-top:12px}
-.segs i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.1)}
+.segs i{flex:1;height:5px;border-radius:3px;background:var(--ov-2)}
 .segs i.on{background:var(--label)}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
 .tile{border-radius:12px;background:var(--raised);padding:7px 10px 8px}
@@ -110,20 +136,20 @@ kbd{font-family:var(--font);font-weight:600}
 .t-group{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;height:18px;margin-top:4px;color:var(--label-2)}
 .t-group:first-child{margin-top:0}
 .task{display:flex;align-items:center;gap:12px;min-height:44px;padding:5px 12px;border-radius:14px;background:var(--raised);flex:none}
-.chk{width:20px;height:20px;border-radius:50%;border:1.8px solid rgba(235,235,245,.34);flex:none;display:grid;place-items:center}
+.chk{width:20px;height:20px;border-radius:50%;border:1.8px solid var(--hair);flex:none;display:grid;place-items:center}
 .task .tx{flex:1;min-width:0}
 .task b{display:block;font-size:14.5px;font-weight:600;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .task small{display:block;font-size:12px;line-height:16px;color:var(--label-3);font-weight:500;white-space:nowrap}
 .prio{font-size:13px;font-weight:800;letter-spacing:-.04em;color:var(--orange);flex:none;padding:0 2px}
 .prio.low{color:var(--label-3)}
-.task.cur{background:var(--raised-2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.task.cur{background:var(--raised-2);box-shadow:inset 0 0 0 1px var(--sep)}
 .task.cur small{color:var(--label-2)}
 .cur-meta{display:flex!important;align-items:center;gap:4px}
 .infocus{display:inline-flex;align-items:center;gap:5px;color:var(--orange);font-weight:700}
 .infocus .pulse{width:6px;height:6px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 3px rgba(255,159,10,.22);animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 5px rgba(255,159,10,.04)}}
-.task.done{background:rgba(255,255,255,.035)}
-.task.done .chk{background:rgba(235,235,245,.28);border-color:transparent;color:var(--surface)}
+.task.done{background:var(--ov-1)}
+.task.done .chk{background:var(--ov-4);border-color:transparent;color:var(--surface)}
 .task.done b{text-decoration:line-through;text-decoration-thickness:1.5px;color:var(--label-3)}
 .task.done small{opacity:.7}
 .t-add{flex:none;height:40px;border-radius:20px;background:var(--fill);font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
@@ -135,20 +161,20 @@ kbd{font-family:var(--font);font-weight:600}
 .app{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--label-2)}
 .app-ic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:var(--label)}
 .app-ic .i{width:20px;height:20px}
-.app.add .app-ic{background:transparent;border:1.5px dashed rgba(235,235,245,.2);color:var(--label-3)}
+.app.add .app-ic{background:transparent;border:1.5px dashed var(--dash);color:var(--label-3)}
 
 /* Music — цвет даёт только обложка, поверх неё стекло */
-.music{flex:0 0 120px;flex-direction:row;align-items:center;gap:18px;padding:20px 22px 20px 20px;isolation:isolate;background:#161618}
+.music{flex:0 0 120px;flex-direction:row;align-items:center;gap:18px;padding:20px 22px 20px 20px;isolation:isolate;background:var(--music-bg)}
 .music .amb{position:absolute;inset:0;z-index:-1;
   background:
-    radial-gradient(240px 170px at 70px 60px,color-mix(in srgb,var(--cover) 62%,transparent),transparent 72%),
+    radial-gradient(240px 170px at 70px 60px,color-mix(in srgb,var(--cover) var(--cover-mix),transparent),transparent 72%),
     radial-gradient(420px 160px at 300px 150px,color-mix(in srgb,var(--cover) 20%,transparent),transparent 70%),
-    radial-gradient(260px 140px at 640px -20px,rgba(255,255,255,.07),transparent 70%);
+    radial-gradient(260px 140px at 640px -20px,var(--ov-2),transparent 70%);
   filter:blur(10px)}
 .music::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:1;
   background:linear-gradient(160deg,rgba(255,255,255,.34),rgba(255,255,255,.06) 30%,rgba(255,255,255,0) 60%,rgba(255,255,255,.14));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
-.cover{position:relative;width:80px;height:80px;border-radius:16px;background:#101012;overflow:hidden;flex:none;box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06)}
+.cover{position:relative;width:80px;height:80px;border-radius:16px;background:#101012;overflow:hidden;flex:none;box-shadow:0 10px 26px var(--shadow),0 0 0 1px var(--edge)}
 .cover .cv-line{position:absolute;left:12px;top:14px;width:22px;height:5px;border-radius:3px;background:#E6E6EA}
 .cover .cv-dot{position:absolute;right:-12px;bottom:-12px;width:62px;height:62px;border-radius:50%;background:var(--cover)}
 .m-info{flex:1;min-width:0}
@@ -160,12 +186,12 @@ kbd{font-family:var(--font);font-weight:600}
 .m-title{font-size:19px;font-weight:700;letter-spacing:-.015em;margin-top:5px;line-height:22px}
 .m-artist{font-size:14px;font-weight:500;color:var(--label-2);line-height:18px}
 .m-progress{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;font-weight:600;color:var(--label-2)}
-.bar{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.16);overflow:hidden}
+.bar{flex:1;height:4px;border-radius:2px;background:var(--ov-3);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--label);border-radius:2px}
 .m-ctrl{display:flex;align-items:center;gap:10px;flex:none}
 .c-sm{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--label)}
 .c-sm .i{width:15px;height:15px}
-.c-lg{width:46px;height:46px;border-radius:50%;background:var(--label);color:#111;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.c-lg{width:46px;height:46px;border-radius:50%;background:var(--label);color:var(--on-label);display:grid;place-items:center;box-shadow:0 6px 18px var(--shadow)}
 
 /* Work */
 .work{flex:1}
@@ -186,7 +212,7 @@ kbd{font-family:var(--font);font-weight:600}
 .g-ok{color:var(--green);font-weight:700}
 .live{position:absolute;right:-3px;top:-3px;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--surface)}
 .proj.on .live{border-color:var(--raised)}
-.drop{margin-top:6px;height:44px;border-radius:14px;border:1.5px dashed rgba(235,235,245,.16);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--label-3)}
+.drop{margin-top:6px;height:44px;border-radius:14px;border:1.5px dashed var(--dash);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--label-3)}
 
 .detail{background:var(--raised);border-radius:18px;padding:16px;display:flex;flex-direction:column;min-width:0}
 .d-head{display:flex;align-items:center;gap:12px}
@@ -197,7 +223,7 @@ kbd{font-family:var(--font);font-weight:600}
 .d-path{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11.5px;color:var(--label-3);margin-top:2px}
 .ib{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;color:var(--label-3)}
 .ib .i{width:13px;height:13px}
-.launch{height:34px;padding:0 14px 0 12px;border-radius:17px;background:var(--label);color:#111;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;flex:none}
+.launch{height:34px;padding:0 14px 0 12px;border-radius:17px;background:var(--label);color:var(--on-label);display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;flex:none}
 .launch .i{width:13px;height:13px}
 .d-row{display:flex;align-items:center;gap:6px;margin-top:9px;min-width:0}
 .d-row:first-of-type{margin-top:14px}
@@ -208,7 +234,7 @@ kbd{font-family:var(--font);font-weight:600}
 .pill.ok,.pill.ok .i{color:var(--green)}
 .mini-btn{height:24px;padding:0 10px;border-radius:12px;background:var(--fill);color:var(--label);font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;margin-left:auto}
 .mini-btn .i{width:11px;height:11px;stroke-width:2.6}
-.fav{width:14px;height:14px;border-radius:4px;display:grid;place-items:center;font-size:8.5px;font-weight:800;color:var(--label);background:rgba(255,255,255,.14);flex:none}
+.fav{width:14px;height:14px;border-radius:4px;display:grid;place-items:center;font-size:8.5px;font-weight:800;color:var(--label);background:var(--ov-3);flex:none}
 .fav .i{width:9px;height:9px;stroke-width:3;color:var(--label)}
 .figma{display:grid;grid-template-columns:5px 5px;gap:0;width:10px;height:14px;flex:none}
 .figma i{width:5px;height:4.66px;display:block;background:var(--label)}
@@ -219,7 +245,7 @@ kbd{font-family:var(--font);font-weight:600}
 .scripts{margin-top:12px;display:flex;flex-direction:column;gap:2px}
 .scripts .d-lbl{margin-bottom:4px}
 .script{display:flex;align-items:center;gap:10px;height:32px;padding:0 6px 0 8px;border-radius:10px}
-.script.run{background:rgba(255,255,255,.05)}
+.script.run{background:var(--ov-1)}
 .s-st{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--fill-2);color:var(--label-2)}
 .s-st .i{width:10px;height:10px}
 .script.run .s-st{background:rgba(48,209,88,.16)}
@@ -243,25 +269,25 @@ kbd{font-family:var(--font);font-weight:600}
 .port code{font-family:var(--mono);font-size:12px;font-weight:600}
 .port span{color:var(--label-3);font-weight:500}
 .port .dot{width:7px;height:7px;background:var(--green)}
-.port .dot.unk{background:rgba(235,235,245,.3)}
+.port .dot.unk{background:var(--hair)}
 .port .ib{width:22px;height:22px;border-radius:50%}
 .tool{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--label);flex:none}
 .tool .i{width:18px;height:18px}
-.tool.add{background:transparent;border:1.5px dashed rgba(235,235,245,.16);color:var(--label-3)}
+.tool.add{background:transparent;border:1.5px dashed var(--dash);color:var(--label-3)}
 .tool-sep{width:1px;height:22px;background:var(--sep);margin:0 4px}
 
 /* Assistant — плавающая стеклянная капсула */
 .assistant{flex:0 0 60px;margin-top:4px;align-self:center;width:572px;border-radius:30px;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 8px}
-.as-ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--label);background:rgba(255,255,255,.1);box-shadow:inset 0 1px 1px rgba(255,255,255,.18)}
+.as-ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--label);background:var(--ov-2);box-shadow:inset 0 1px 1px var(--glass-hi)}
 .as-ic .i{width:20px;height:20px}
 .as-in{flex:1;display:flex;align-items:center;gap:10px;font-size:14.5px;color:var(--label-3);white-space:nowrap;min-width:0}
 .as-in span{flex:1;overflow:hidden;text-overflow:ellipsis}
-.as-in kbd{color:var(--label-2);font-size:13px;height:28px;padding:0 10px;border-radius:14px;background:rgba(255,255,255,.08);display:grid;place-items:center}
+.as-in kbd{color:var(--label-2);font-size:13px;height:28px;padding:0 10px;border-radius:14px;background:var(--ov-2);display:grid;place-items:center}
 
 /* Focus — единственный тёплый акцент на экране */
 .focus{flex:0 0 290px}
 .pomo{display:flex;align-items:center;gap:4px;margin-left:auto;margin-right:2px;font-size:12px;font-weight:600;color:var(--label-3)}
-.pomo i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.14)}
+.pomo i{width:7px;height:7px;border-radius:50%;background:var(--ov-3)}
 .pomo i.on{background:var(--orange)}
 .pomo i.cur{background:var(--orange);box-shadow:0 0 0 2.5px rgba(255,159,10,.28)}
 .pomo span{margin-left:5px}
@@ -288,7 +314,7 @@ kbd{font-family:var(--font);font-weight:600}
 .ring::before{content:"";position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle,#FF7A3D 0%,rgba(255,90,78,0) 70%);filter:blur(16px);opacity:var(--glow);animation:glow 3.2s ease-in-out infinite}
 @keyframes glow{50%{transform:scale(1.12);opacity:calc(var(--glow) * .7)}}
 .ring svg{position:relative;width:100%;height:100%;display:block;overflow:visible}
-.ring .track{fill:none;stroke:#2C2C2E;stroke-width:6}
+.ring .track{fill:none;stroke:var(--ring-track);stroke-width:6}
 .ring .prog{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .6s linear}
 .ring .level{transition:transform .8s cubic-bezier(.32,.72,0,1)}
 .ring .wave{animation:wave 2.4s linear infinite}
@@ -297,7 +323,7 @@ kbd{font-family:var(--font);font-weight:600}
 .ring .bub{animation:bub 3s ease-in infinite;opacity:0}
 @keyframes bub{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-46px);opacity:0}}
 .ring .head{filter:drop-shadow(0 0 6px rgba(255,212,59,.9));transition:cx .6s linear, cy .6s linear}
-.ring-t{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-shadow:0 1px 10px rgba(120,30,10,.35)}
+.ring-t{position:absolute;inset:0;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-shadow:0 1px 10px rgba(120,30,10,.35)}
 .ring-t b{font-size:32px;line-height:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .ring-t small{font-size:11px;font-weight:600;opacity:.85;margin-top:1px}
 .ring.is-paused .wave,.ring.is-paused .bub,.ring.is-paused::before{animation-play-state:paused}
@@ -334,8 +360,8 @@ kbd{font-family:var(--font);font-weight:600}
 .cc{width:92px;flex:none;display:flex;flex-direction:column;gap:6px}
 .cc-th{height:80px;border-radius:12px;position:relative;overflow:hidden;padding:8px;background:var(--raised)}
 .cc-cap{font-size:11px;line-height:14px;font-weight:600;color:var(--label-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cc-th.shot{background:#0E0E10;box-shadow:inset 0 0 0 1px var(--sep);font-family:var(--mono);font-size:7.5px;line-height:11px;color:var(--label-2)}
-.cc-th.shot .e{color:var(--red)}
+.cc-th.shot{background:#0E0E10;box-shadow:inset 0 0 0 1px var(--sep);font-family:var(--mono);font-size:7.5px;line-height:11px;color:rgba(235,235,245,.62)}
+.cc-th.shot .e{color:#FF453A}
 .cc-th.text p{font-size:11px;font-weight:600;line-height:14px}
 .cc-th.text .pin{position:absolute;right:7px;bottom:7px;width:12px;height:12px;color:var(--label-3)}
 .cc-th.code code{font-family:var(--mono);font-size:10px;line-height:14px;font-weight:500;color:var(--label-2)}
@@ -372,7 +398,7 @@ table.how td:first-child{width:250px;font-weight:700;color:var(--label);padding-
 table.how code{font-family:var(--mono);font-size:12.5px;background:var(--fill-2);padding:1px 5px;border-radius:5px}
 
 /* Состояния таймера */
-.f-main.alt{background:var(--label);color:#111}
+.f-main.alt{background:var(--label);color:var(--on-label)}
 .f-main.ok{background:rgba(48,209,88,.2);color:var(--green)}
 .f-stop.txt{font-size:12.5px;font-weight:700;color:var(--label)}
 
@@ -1009,7 +1035,9 @@ const main = document.getElementById("focus-main");
 const ring = main.querySelector(".ring");
 buildRing(ring);
 const T = { total: +ring.dataset.total, left: +ring.dataset.left, state: ring.dataset.state };
-const frozen = new URLSearchParams(location.search).has("shot");
+const params = new URLSearchParams(location.search);
+const frozen = params.has("shot");
+if (params.get("theme") === "light") document.documentElement.dataset.theme = "light";
 
 function syncMain() {
   renderRing(ring, T.total, T.left, T.state);
