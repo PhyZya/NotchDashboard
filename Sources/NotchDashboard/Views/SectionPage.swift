@@ -17,20 +17,24 @@ struct SectionPage: View {
                 Text(block.sectionTitle)
                     .font(.system(size: 28, weight: .bold))
                     .tracking(-0.7)
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Theme.label)
                 Spacer(minLength: 0)
                 Text("Esc — на главную")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(Theme.label3)
             }
             .frame(height: 44)
 
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(Theme.surface)
                 .overlay {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(Theme.edge, lineWidth: 1)
+                }
+                .overlay {
                     Text("Раздел пока пустой")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(Theme.label3)
                 }
                 .padding(.top, layout.gridFrame.minY - layout.heroTop - 44)
         }

@@ -4,7 +4,7 @@ import CoreGraphics
 #endif
 
 /// Что показывает панель наведения: плеер, пока играет музыка, и горящие задачи.
-/// Лист: `design/v2/Наведение.png`. Музыку подключим на шаге 3 плана, задачи —
+/// Лист: `design/v3/Наведение.png`. Музыку подключим на шаге 3 плана, задачи —
 /// на шаге 2, до тех пор данные есть только в образце `--sample`.
 public struct HoverContent: Equatable, Sendable {
     /// Трек Spotify. `nil` — музыка не играет и не стоит на паузе меньше 10 минут.
@@ -128,7 +128,7 @@ public enum HoverLayout {
     /// Самая высокая панель — с плеером и тремя задачами. По ней считается окно у выреза.
     public static func largestSize(notchHeight: CGFloat) -> CGSize {
         let tasks = (0..<maxTasks).map { HotTask(id: "\($0)", title: "", meta: "") }
-        let music = NowPlaying(title: "", artist: "", isPlaying: true, progress: 0, coverColor: DesignPalette.red)
+        let music = NowPlaying(title: "", artist: "", isPlaying: true, progress: 0, coverColor: DesignPalette.sampleCover)
         return size(for: HoverContent(nowPlaying: music, hotTasks: tasks), notchHeight: notchHeight)
     }
 }
@@ -137,7 +137,7 @@ extension HoverContent {
     /// Образец с листов дизайна для `--sample`: снимки, видео и проверка вёрстки,
     /// пока нет настоящих задач и Spotify.
     public static let sample = HoverContent(
-        nowPlaying: NowPlaying(title: "Тёплый шум", artist: "Кассета", isPlaying: true, progress: 0.36, coverColor: DesignPalette.red),
+        nowPlaying: NowPlaying(title: "Тёплый шум", artist: "Кассета", isPlaying: true, progress: 0.36, coverColor: DesignPalette.sampleCover),
         hotTasks: [
             HotTask(id: "internet", title: "Оплатить интернет", meta: "Просрочено · вчера, 18:00", isOverdue: true, priority: .high),
             HotTask(id: "report", title: "Отправить отчёт за квартал", meta: "18:00 · #работа"),

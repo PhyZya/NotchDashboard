@@ -20,6 +20,7 @@ final class NotchController {
     private var closing: Task<Void, Never>?
     private var scrollDistance: CGFloat = 0
     private var scrollFired = false
+    private var theme = AppTheme.default
 
     init(options: LaunchOptions) {
         self.options = options
@@ -29,6 +30,7 @@ final class NotchController {
         if options.showsSample {
             model.hover = .sample
         }
+        apply(theme: options.theme ?? Self.savedTheme)
         updateScreen()
         observeSystem()
 
@@ -114,12 +116,42 @@ final class NotchController {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Настройки появятся позже", action: nil, keyEquivalent: ""))
         menu.addItem(.separator())
+        // Тема — здесь, пока нет экрана настроек.
+        for theme in AppTheme.allCases {
+            let item = ClosureMenuItem(title: theme.title) { [weak self] in
+                self?.choose(theme: theme)
+            }
+            item.state = theme == self.theme ? .on : .off
+            menu.addItem(item)
+        }
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Выйти из NotchDashboard", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
         if let build = BuildInfo.menuTitle {
             menu.addItem(.separator())
             menu.addItem(NSMenuItem(title: build, action: nil, keyEquivalent: ""))
         }
         _ = menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+    }
+
+    // MARK: - Тема
+
+    private static let themeKey = "theme"
+
+    /// Выбор из настроек, по умолчанию тёмная.
+    private static var savedTheme: AppTheme {
+        UserDefaults.standard.string(forKey: themeKey).flatMap(AppTheme.init(rawValue:)) ?? .default
+    }
+
+    private func choose(theme: AppTheme) {
+        UserDefaults.standard.set(theme.rawValue, forKey: Self.themeKey)
+        apply(theme: theme)
+    }
+
+    /// Тема задаёт оформление всего приложения: от него токены `Theme`,
+    /// стекло и меню. Панель у выреза остаётся тёмной (`makeNotchPanel`).
+    private func apply(theme: AppTheme) {
+        self.theme = theme
+        NSApplication.shared.appearance = NSAppearance.forTheme(theme)
     }
 
     // MARK: - Машина состояний
@@ -212,7 +244,7 @@ final class NotchController {
             model.morphOrigin = geometry.localHangingRect(size: size)
             model.morphOriginRadius = NotchMetrics.cornerRadius(for: phase)
             model.morphProgress = 0
-            model.isDashboardLight = false
+            model.hasDashboardBackground = false
             model.showsDashboardContent = false
             // Дальше — `dashboardDidAppear()`: форма появится там же, где форма у выреза.
             model.isDashboardPresented = true
@@ -226,7 +258,7 @@ final class NotchController {
             model.morphProgress = 1
         }
         withAnimation(.easeInOut(duration: Motion.colorInDuration).delay(Motion.colorInDelay)) {
-            model.isDashboardLight = true
+            model.hasDashboardBackground = true
         }
         withAnimation(.easeOut(duration: Motion.blocksInDuration).delay(Motion.blocksInDelay)) {
             model.showsDashboardContent = true
@@ -253,7 +285,7 @@ final class NotchController {
                 self.model.morphProgress = 0
             }
             withAnimation(.easeIn(duration: Motion.colorOutDuration)) {
-                self.model.isDashboardLight = false
+                self.model.hasDashboardBackground = false
             }
             // Небольшой запас, чтобы анимация точно дошла до конца.
             try? await Task.sleep(for: .seconds(Motion.shrinkDuration + 0.04))
@@ -361,8 +393,7 @@ final class NotchController {
     private func showBackdrop(on geometry: ScreenGeometry) {
         let window = backdrop ?? NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: false)
         backdrop = window
-        let desk = DesignPalette.desk
-        window.backgroundColor = NSColor(srgbRed: desk.red, green: desk.green, blue: desk.blue, alpha: desk.alpha)
+        window.backgroundColor = NSColor(DesignPalette.desk)
         window.ignoresMouseEvents = true
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
@@ -372,6 +403,8 @@ final class NotchController {
 
     private func makeNotchPanel() -> OverlayPanel {
         let panel = OverlayPanel.make()
+        // Вырез, «уши» и панель наведения чёрные в любой теме.
+        panel.appearance = NSAppearance.forTheme(.dark)
         panel.acceptsMouseMovedEvents = true
         panel.ignoresMouseEvents = true
         panel.scrollHandler = { [weak self] event in
@@ -433,6 +466,26 @@ final class NotchController {
                 self.send(.lostFocus)
             }
         })
+    }
+}
+
+/// Пункт меню с действием-замыканием: у контроллера нет Objective-C селекторов.
+private final class ClosureMenuItem: NSMenuItem {
+    private let handler: () -> Void
+
+    init(title: String, handler: @escaping () -> Void) {
+        self.handler = handler
+        super.init(title: title, action: #selector(fire), keyEquivalent: "")
+        target = self
+    }
+
+    @available(*, unavailable)
+    required init(coder: NSCoder) {
+        fatalError("init(coder:) не используется")
+    }
+
+    @objc private func fire() {
+        handler()
     }
 }
 

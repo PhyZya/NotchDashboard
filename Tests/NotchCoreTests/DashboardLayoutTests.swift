@@ -3,7 +3,7 @@ import Testing
 @testable import NotchCore
 
 struct DashboardLayoutTests {
-    /// Таблица «Сетка главной v2» из `docs/DESIGN.md`.
+    /// Таблица «Сетка главной» из `docs/DESIGN.md`.
     @Test func matchesDesignOnDesignCanvas() {
         let layout = DashboardLayout(screenSize: CGSize(width: 1440, height: 900), topInset: 32)
         #expect(layout.scale == 1)

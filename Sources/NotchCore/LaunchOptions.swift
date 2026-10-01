@@ -16,6 +16,7 @@ import Foundation
 ///   Курсор при этом не отслеживается.
 /// - `--sample` — панель наведения с музыкой и задачами из макета
 ///   (`HoverContent.sample`), пока нет настоящих задач и Spotify.
+/// - `--theme dark|light` — тема на этот запуск, выбор в настройках не меняется.
 public struct LaunchOptions: Hashable, Sendable {
     public enum State: String, Hashable, Sendable {
         case idle
@@ -29,6 +30,7 @@ public struct LaunchOptions: Hashable, Sendable {
     public var showsBackdrop = false
     public var runsDemo = false
     public var showsSample = false
+    public var theme: AppTheme?
 
     /// Курсор мешает закреплённому наведению и сценарию.
     public var tracksPointer: Bool {
@@ -41,6 +43,9 @@ public struct LaunchOptions: Hashable, Sendable {
         showsBackdrop = arguments.contains("--backdrop")
         runsDemo = arguments.contains("--demo")
         showsSample = arguments.contains("--sample")
+        if let value = Self.value(after: "--theme", in: arguments) {
+            theme = AppTheme(rawValue: value)
+        }
         if let value = Self.value(after: "--state", in: arguments), let state = State(rawValue: value) {
             self.state = state
         }

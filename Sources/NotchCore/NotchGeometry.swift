@@ -4,7 +4,7 @@ import CoreGraphics
 #endif
 
 /// Размеры состояний выреза в pt. Источник — таблица «Состояния выреза»
-/// в `docs/SPEC.md` и CSS `design/v2/index.html`.
+/// в `docs/SPEC.md` и CSS `design/v3/index.html`.
 public enum NotchMetrics {
     /// Ширина одного «уха» по бокам от выреза.
     public static let earWidth: CGFloat = 44

@@ -34,7 +34,7 @@ struct DashboardStage: View {
         let visible = model.showsDashboardContent
 
         ZStack(alignment: .topLeading) {
-            shape.fill(model.isDashboardLight ? Theme.bg : Theme.notch)
+            shape.fill(model.hasDashboardBackground ? Theme.bg : Theme.notch)
 
             DashboardContent(model: model, controller: controller, geometry: geometry)
                 .frame(width: screen.width, height: screen.height, alignment: .topLeading)
@@ -60,6 +60,7 @@ struct DashboardContent: View {
 
         ZStack(alignment: .topLeading) {
             ZStack(alignment: .topLeading) {
+                NotchGlow(centerX: layout.canvasSize.width / 2)
                 TopBar(layout: layout)
 
                 switch model.route {
@@ -79,6 +80,20 @@ struct DashboardContent: View {
             NotchCutout(rect: geometry.localNotchRect)
                 .onTapGesture { controller.notchClicked() }
         }
+    }
+}
+
+/// Еле заметный свет из выреза под шапкой, чтобы стеклу было что преломлять
+/// (`.screen::before` в `design/v3/index.html`): эллипс 1100 × 520, верх на 240 выше экрана.
+struct NotchGlow: View {
+    let centerX: CGFloat
+
+    var body: some View {
+        Rectangle()
+            .fill(EllipticalGradient(colors: [Theme.notchGlow, .clear], center: .center, startRadiusFraction: 0, endRadiusFraction: 0.5))
+            .frame(width: 1100, height: 520)
+            .offset(x: centerX - 550, y: -240)
+            .allowsHitTesting(false)
     }
 }
 

@@ -3,7 +3,8 @@ import NotchCore
 import SwiftUI
 
 /// Окно у выреза: чёрная форма, в покое — «уши», при наведении — панель
-/// с музыкой и горящими задачами (`design/v2/Наведение.png`).
+/// с музыкой и горящими задачами (`design/v3/Наведение.png`). Окно всегда
+/// в тёмном оформлении, поэтому токены `Theme` здесь берут тёмные значения.
 struct NotchPanelView: View {
     let model: NotchModel
     let controller: NotchController
@@ -133,11 +134,11 @@ private struct HoverHeader: View {
                 Text("Сегодня")
                     .font(.system(size: 15, weight: .semibold))
                     .tracking(-0.15)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.label)
                 if content.tasksTotal > 0 {
                     Text(RussianText.tasksDone(content.tasksDone, of: content.tasksTotal))
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Theme.darkText2)
+                        .foregroundStyle(Theme.label3)
                         .contentTransition(.numericText())
                 }
             }
@@ -146,7 +147,7 @@ private struct HoverHeader: View {
                 Image(systemName: "arrow.up.right")
                     .font(.system(size: 12, weight: .bold))
             }
-            .buttonStyle(PanelButtonStyle(size: 32, fill: Theme.dark2, foreground: .white, hoverFill: .white, hoverForeground: Theme.ink))
+            .buttonStyle(PanelButtonStyle(size: 32, fill: Theme.fill2, foreground: Theme.label2, hoverFill: Theme.fill, hoverForeground: Theme.label))
             .help("Открыть дашборд  ⌥D")
             .accessibilityLabel("Открыть дашборд")
         }
@@ -155,7 +156,7 @@ private struct HoverHeader: View {
 }
 
 /// Плеер Spotify: обложка открывает Spotify, кнопки управляют им,
-/// полоска внизу — прогресс трека в цвет обложки.
+/// эквалайзер в цвет обложки, пауза — контрастный кружок.
 private struct PlayerCard: View {
     let track: NowPlaying
     let controller: NotchController
@@ -174,7 +175,7 @@ private struct PlayerCard: View {
                 HStack(spacing: 7) {
                     Text(track.title)
                         .font(.system(size: 14.5, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Theme.label)
                     if track.isPlaying {
                         Image(systemName: "waveform")
                             .font(.system(size: 11, weight: .bold))
@@ -185,9 +186,9 @@ private struct PlayerCard: View {
                 .lineLimit(1)
                 Text(track.artist)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.darkText2)
+                    .foregroundStyle(Theme.label2)
                     .lineLimit(1)
-                ProgressLine(progress: track.progress, color: accent)
+                ProgressLine(progress: track.progress)
                     .padding(.top, 6)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -196,37 +197,38 @@ private struct PlayerCard: View {
                 Button { controller.music(.previous) } label: {
                     Image(systemName: "backward.end.fill").font(.system(size: 12))
                 }
-                .buttonStyle(PanelButtonStyle(size: 30, fill: .clear, foreground: .white, hoverFill: Theme.dark3))
+                .buttonStyle(PanelButtonStyle(size: 30, fill: .clear, foreground: Theme.label, hoverFill: Theme.fill))
                 .accessibilityLabel("Назад")
 
                 Button { controller.music(.playPause) } label: {
                     Image(systemName: track.isPlaying ? "pause.fill" : "play.fill").font(.system(size: 14))
                 }
-                .buttonStyle(PanelButtonStyle(size: 36, fill: .white, foreground: Theme.ink))
+                .buttonStyle(PanelButtonStyle(size: 36, fill: Theme.label, foreground: Theme.onLabel))
                 .accessibilityLabel(track.isPlaying ? "Пауза" : "Играть")
 
                 Button { controller.music(.next) } label: {
                     Image(systemName: "forward.end.fill").font(.system(size: 12))
                 }
-                .buttonStyle(PanelButtonStyle(size: 30, fill: .clear, foreground: .white, hoverFill: Theme.dark3))
+                .buttonStyle(PanelButtonStyle(size: 30, fill: .clear, foreground: Theme.label, hoverFill: Theme.fill))
                 .accessibilityLabel("Вперёд")
             }
         }
         .padding(10)
         .frame(height: HoverLayout.playerHeight)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.dark2))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.raised))
     }
 }
 
 /// Заглушка обложки как в макете, пока нет настоящей из Spotify.
+/// Обложка — содержимое, от темы не зависит.
 private struct CoverArt: View {
     let color: Color
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Theme.dark
+            Color(DesignColor(hex: 0x101012))
             Capsule()
-                .fill(Theme.bg)
+                .fill(Color(DesignColor(hex: 0xE6E6EA)))
                 .frame(width: 13, height: 3)
                 .offset(x: 7, y: 8)
             Circle()
@@ -241,14 +243,13 @@ private struct CoverArt: View {
 
 private struct ProgressLine: View {
     let progress: Double
-    let color: Color
 
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
-                Capsule().fill(Theme.dark3)
+                Capsule().fill(Theme.overlay3)
                 Capsule()
-                    .fill(color)
+                    .fill(Theme.label)
                     .frame(width: proxy.size.width * min(max(progress, 0), 1))
             }
         }
@@ -273,14 +274,14 @@ private struct HotTaskRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(task.title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(task.isDone ? Theme.label3 : Theme.label)
                     .strikethrough(task.isDone)
                 Text(task.meta)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(task.isOverdue ? Theme.redOnDark : Theme.darkText2)
+                    .foregroundStyle(task.isOverdue ? Theme.red : Theme.label3)
+                    .opacity(task.isDone ? 0.7 : 1)
             }
             .lineLimit(1)
-            .opacity(task.isDone ? 0.6 : 1)
             .frame(maxWidth: .infinity, alignment: .leading)
 
             if let priority = task.priority {
@@ -289,7 +290,7 @@ private struct HotTaskRow: View {
         }
         .padding(.horizontal, 12)
         .frame(height: HoverLayout.taskHeight)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.dark2))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(task.isDone ? Theme.overlay1 : Theme.raised))
     }
 }
 
@@ -299,12 +300,12 @@ private struct CheckCircle: View {
     var body: some View {
         ZStack {
             if isDone {
-                Circle().fill(.white)
+                Circle().fill(Theme.overlay4)
                 Image(systemName: "checkmark")
                     .font(.system(size: 10, weight: .heavy))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Theme.surface)
             } else {
-                Circle().strokeBorder(.white.opacity(0.85), lineWidth: 2)
+                Circle().strokeBorder(Theme.hair, lineWidth: 1.8)
             }
         }
         .frame(width: 20, height: 20)
@@ -312,17 +313,16 @@ private struct CheckCircle: View {
     }
 }
 
-/// `!!` — жёлтый кружок, `!` — белый, как в блоке задач на главной.
+/// Приоритет текстом, как в блоке задач на главной: `!!` оранжевый, `!` тихий.
 private struct PriorityBadge: View {
     let priority: TaskPriority
 
     var body: some View {
         Text(priority.mark)
-            .font(.system(size: 11.5, weight: .heavy))
+            .font(.system(size: 13, weight: .heavy))
             .tracking(-0.5)
-            .foregroundStyle(Theme.ink)
-            .frame(width: 22, height: 22)
-            .background(Circle().fill(priority == .high ? Theme.yellow : .white))
+            .foregroundStyle(priority == .high ? Theme.orange : Theme.label3)
+            .padding(.horizontal, 2)
     }
 }
 
@@ -334,20 +334,20 @@ private struct AllDoneCard: View {
         HStack(spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 24))
-                .foregroundStyle(.white, Theme.ok)
+                .foregroundStyle(.white, Theme.green)
             VStack(alignment: .leading, spacing: 0) {
                 Text("На сегодня всё горящее сделано")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.label)
                 Text(RussianText.tasksLeft(tasksLeft))
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.darkText2)
+                    .foregroundStyle(Theme.label2)
             }
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)
         .frame(height: HoverLayout.allDoneHeight)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.dark2))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.raised))
     }
 }
 

@@ -3,7 +3,8 @@ import Foundation
 import CoreGraphics
 #endif
 
-/// Блоки главной v2 (`design/v2/Дашборд главная v2.png`).
+/// Блоки главной (`design/v3/Дашборд главная v3.png`). Все — `surface`,
+/// кроме музыки: её подсвечивает обложка трека.
 public enum DashboardBlock: String, CaseIterable, Hashable, Sendable, Identifiable {
     case tasks
     case miniApps
@@ -38,34 +39,10 @@ public enum DashboardBlock: String, CaseIterable, Hashable, Sendable, Identifiab
         default: title
         }
     }
-
-    public var style: BlockStyle {
-        switch self {
-        case .tasks:
-            BlockStyle(background: DesignPalette.purple, foreground: DesignPalette.white, goBackground: DesignPalette.white.opacity(0.2))
-        case .miniApps, .work:
-            BlockStyle(background: DesignPalette.surface, foreground: DesignPalette.ink, goBackground: DesignPalette.bg)
-        case .music:
-            BlockStyle(background: DesignPalette.red, foreground: DesignPalette.ink, goBackground: DesignPalette.ink.opacity(0.1))
-        case .assistant, .focus:
-            BlockStyle(background: DesignPalette.dark, foreground: DesignPalette.white, goBackground: DesignPalette.dark2)
-        case .notes:
-            BlockStyle(background: DesignPalette.yellow, foreground: DesignPalette.ink, goBackground: DesignPalette.yellowGo)
-        case .clipboard:
-            BlockStyle(background: DesignPalette.blue, foreground: DesignPalette.white, goBackground: DesignPalette.white.opacity(0.18))
-        }
-    }
-}
-
-/// Цвета блока: фон, заголовок и кружок со стрелкой ↗.
-public struct BlockStyle: Hashable, Sendable {
-    public var background: DesignColor
-    public var foreground: DesignColor
-    public var goBackground: DesignColor
 }
 
 /// Раскладка главной. Холст макета — 1440 × 900 pt; на другом экране
-/// правила такие (они же в `docs/DESIGN.md`, «Сетка главной v2»):
+/// правила такие (они же в `docs/DESIGN.md`, «Сетка главной»):
 /// - боковые колонки по 348, средняя забирает остаток ширины;
 /// - по высоте растут задачи, работа и буфер обмена, остальные блоки
 ///   фиксированы; ассистент — полоса 572 × 60 по центру средней колонки;

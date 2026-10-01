@@ -37,6 +37,13 @@ struct LaunchOptionsTests {
         #expect(!LaunchOptions(arguments: ["--state", "hover"]).tracksPointer)
     }
 
+    @Test func themeFlag() {
+        #expect(LaunchOptions(arguments: []).theme == nil)
+        #expect(LaunchOptions(arguments: ["--theme", "light"]).theme == .light)
+        #expect(LaunchOptions(arguments: ["--theme", "dark"]).theme == .dark)
+        #expect(LaunchOptions(arguments: ["--theme", "sepia"]).theme == nil)
+    }
+
     /// Сценарий проходит все состояния каркаса и возвращается в покой.
     @Test func demoScriptVisitsEveryState() {
         let times = DemoStep.script.map(\.at)

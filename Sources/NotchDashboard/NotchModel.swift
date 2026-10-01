@@ -21,8 +21,9 @@ final class NotchModel {
     /// Откуда растёт форма, в координатах экрана с началом вверху слева.
     var morphOrigin = CGRect.zero
     var morphOriginRadius = NotchMetrics.earsCornerRadius
-    /// Форма светлеет из чёрного в цвет фона дашборда.
-    var isDashboardLight = false
+    /// Форма перекрашивается из чёрного выреза в фон дашборда `bg`
+    /// (в тёмной теме он почти чёрный, в светлой — светло-серый).
+    var hasDashboardBackground = false
     var showsDashboardContent = false
 
     /// Что показывает панель наведения и счётчик в «ухе». Задачи появятся

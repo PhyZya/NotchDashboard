@@ -32,7 +32,8 @@ shoot() {
 shoot idle
 shoot hover --state hover
 shoot hover-sample --state hover --sample
-shoot dashboard --state dashboard
+shoot dashboard --state dashboard --sample
+shoot dashboard-light --state dashboard --sample --theme light
 shoot section --section work
 
 # Видео сценария --demo: панель наведения, ↗, дашборд, раздел, закрытие.

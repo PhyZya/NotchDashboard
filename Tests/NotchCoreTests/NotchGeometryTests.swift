@@ -61,7 +61,7 @@ struct NotchGeometryTests {
         #expect(geometry.hotZone(for: .hover, hover: .sample).contains(CGPoint(x: 500, y: 700)))
     }
 
-    /// Высоты с листа `design/v2/Наведение.png`: там вырез 32 pt, здесь 38.
+    /// Высоты с листа `design/v3/Наведение.png`: там вырез 32 pt, здесь 38.
     @Test func hoverPanelHeightFollowsContent() {
         let notch: CGFloat = 38
         #expect(HoverLayout.height(for: HoverContent(), notchHeight: notch) == 160)
