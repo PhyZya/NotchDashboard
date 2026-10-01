@@ -115,6 +115,10 @@ final class NotchController {
         menu.addItem(NSMenuItem(title: "Настройки появятся позже", action: nil, keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Выйти из NotchDashboard", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
+        if let build = BuildInfo.menuTitle {
+            menu.addItem(.separator())
+            menu.addItem(NSMenuItem(title: build, action: nil, keyEquivalent: ""))
+        }
         _ = menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
     }
 

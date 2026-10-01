@@ -49,6 +49,12 @@ struct NotchPanelView: View {
             Button("Открыть дашборд  ⌥D") { controller.toggleDashboard() }
             Divider()
             Button("Выйти из NotchDashboard") { NSApplication.shared.terminate(nil) }
+            if let build = BuildInfo.menuTitle {
+                Divider()
+                // Видно, какая сборка запущена: ветка, коммит и время из scripts/build-app.sh.
+                Button(build) {}
+                    .disabled(true)
+            }
         }
         .ignoresSafeArea()
     }

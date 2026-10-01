@@ -21,11 +21,18 @@
 Нужны macOS 27 и Xcode 27.
 
 ```sh
-swift run NotchDashboard          # запустить из терминала
+scripts/run.sh                    # собрать свежий .app и запустить
+scripts/run.sh --sample           # то же, панель наведения с музыкой и задачами
+swift run NotchDashboard          # запустить из терминала без .app
 open Package.swift                # или открыть в Xcode и нажать Run
-scripts/build-app.sh              # собрать build/NotchDashboard.app
+scripts/build-app.sh              # только собрать build/NotchDashboard.app
 swift test                        # тесты логики (работают и в Linux)
 ```
+
+`scripts/build-app.sh` останавливает запущенную копию: у приложения нет
+иконки в Dock, и `open` при работающей старой копии новую не запускает.
+Какая сборка запущена, видно внизу меню по правому клику на вырезе:
+ветка, коммит и время сборки.
 
 Иконки в Dock нет. Наведите курсор на вырез — вытечет панель с музыкой
 и горящими задачами. Дашборд на весь экран — кнопка ↗ в ней, `⌥D` или жест
