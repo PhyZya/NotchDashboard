@@ -18,7 +18,9 @@
 
 ## Сборка
 
-Нужны macOS 27 и Xcode 27. Первый раз:
+Нужны macOS 27 и Xcode 27. Если в терминале старый Swift (xcode-select
+смотрит на старые Command Line Tools), скрипт сам возьмёт Xcode из
+«Программ». Первый раз:
 
 ```sh
 git clone https://github.com/PhyZya/NotchDashboard.git

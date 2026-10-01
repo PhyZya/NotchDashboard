@@ -30,9 +30,49 @@ if behind="$(git rev-list --count 'HEAD..@{u}' 2>/dev/null)" && [ "$behind" -gt 
   echo "Внимание: ветка отстаёт от $(git rev-parse --abbrev-ref '@{u}') на $behind коммит(ов) — сделайте git pull"
 fi
 
+# Пакету нужен Swift не старше версии из первой строки Package.swift.
+# Частая причина старого Swift в терминале: xcode-select указывает на старые
+# Command Line Tools, а Xcode 27 стоит рядом. Тогда берём его сами.
+required="$(sed -nE '1s#^// swift-tools-version: *([0-9]+\.[0-9]+).*#\1#p' Package.swift)"
+
+# «6.4» из `… --version` или пусто, если команда не сработала.
+swift_version() {
+  "$@" --version 2>/dev/null | sed -nE 's/.*Swift version ([0-9]+\.[0-9]+).*/\1/p' | head -n 1
+}
+
+# Версия $1 не ниже $2.
+at_least() {
+  [ -n "$1" ] && [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -n 1)" = "$2" ]
+}
+
+swift_cmd=(swift)
+have="$(swift_version swift)"
+if ! at_least "$have" "$required"; then
+  xcode=""
+  xcode_version=""
+  for candidate in /Applications/Xcode*.app "$HOME"/Applications/Xcode*.app; do
+    [ -d "$candidate/Contents/Developer" ] || continue
+    version="$(swift_version env DEVELOPER_DIR="$candidate/Contents/Developer" xcrun swift)"
+    if at_least "$version" "$required" && { [ -z "$xcode" ] || at_least "$version" "$xcode_version"; }; then
+      xcode="$candidate"
+      xcode_version="$version"
+    fi
+  done
+  if [ -z "$xcode" ]; then
+    echo "Нужен Swift $required или новее (Xcode 27), а в терминале — ${have:-не найден}." >&2
+    echo "Установите Xcode 27 из App Store, откройте его один раз и выполните:" >&2
+    echo "  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer" >&2
+    exit 1
+  fi
+  export DEVELOPER_DIR="$xcode/Contents/Developer"
+  swift_cmd=(xcrun swift)
+  echo "В терминале Swift ${have:-не найден}, беру ${xcode##*/} (Swift $xcode_version)."
+  echo "Чтобы терминал сразу брал его: sudo xcode-select -s $DEVELOPER_DIR"
+fi
+
 build() {
-  swift build -c "$config" --product NotchDashboard
-  bin="$(swift build -c "$config" --show-bin-path)/NotchDashboard"
+  "${swift_cmd[@]}" build -c "$config" --product NotchDashboard
+  bin="$("${swift_cmd[@]}" build -c "$config" --show-bin-path)/NotchDashboard"
 }
 
 # Бинарник старше какого-то исходника — значит, сборка его не обновила.
